@@ -1,0 +1,29 @@
+# ── Dependencies ──────────────────────────────────────────────────────────────
+node_modules/
+
+# ── Build output ──────────────────────────────────────────────────────────────
+frontend-react/dist/
+
+# ── Generated assets ──────────────────────────────────────────────────────────
+# canvaskit.wasm is auto-copied from node_modules by the Vite plugin on first run
+frontend-react/public/canvaskit.wasm
+
+# ── SQLite artefacts (not used by current backend, kept for safety) ───────────
+backend/cms.db
+backend/cms.db-shm
+backend/cms.db-wal
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+
+# ── Environment ───────────────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# ── OS / editor ───────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
