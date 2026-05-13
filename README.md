@@ -6,40 +6,120 @@ A content management tool for modelling greenhouse locations and their energy in
 
 ## Architecture
 
+The repository is an **npm workspace monorepo** with two apps and a shared root configuration.
+
 ```
-hch-cms-samax/
-├── backend/
-│   ├── server.js        # Express REST API
-│   ├── db.json          # JSON flat-file database
-│   └── seed.js          # One-time data migration helper
-└── frontend-react/
-    ├── src/
-    │   ├── main.jsx             # React entry point
-    │   ├── App.jsx              # Root layout, zoom/pan controls
-    │   ├── App.css              # Global styles
-    │   ├── api.js               # REST client (fetch wrappers)
-    │   ├── constants.js         # Asset/buffer kinds, translations
-    │   ├── context/
-    │   │   └── AppContext.jsx   # Global state (locations, selection, view)
-    │   ├── hooks/
-    │   │   └── useCanvasKit.js  # Loads CanvasKit WASM + fonts
-    │   └── components/
-    │       ├── Topbar.jsx       # Relation/location switcher
-    │       ├── Legend.jsx       # Map legend + zoom buttons
-    │       ├── Modal.jsx        # Create-entity dialog
-    │       ├── Toast.jsx        # Notification banner
-    │       ├── canvas/
-    │       │   ├── CanvasView.jsx  # WebGL surface, pan/zoom/hit-test
-    │       │   ├── renderer.js     # Skia draw calls (all entities)
-    │       │   └── layout.js       # Layout algorithm (positions/sizes)
-    │       └── panel/
-    │           ├── Panel.jsx       # Entity detail/edit forms
-    │           └── PanelSection.jsx
-    └── public/
-        ├── canvaskit.wasm          # Skia CanvasKit WASM binary
-        ├── NotoSans-Regular.ttf    # Sans-serif font for canvas labels
-        └── NotoMono-Regular.ttf    # Monospace font for canvas labels
+hch-cms-prototype/
+├── package.json             # Workspace root — scripts for dev/build
+├── docker-compose.yml       # Orchestrates backend + frontend containers
+├── apps/
+│   ├── backend/
+│   │   ├── Dockerfile       # node:22-slim image (builds better-sqlite3)
+│   │   ├── server.js        # Express REST API
+│   │   ├── db.js            # SQLite database setup (better-sqlite3)
+│   │   ├── db.json          # Seed / legacy data file
+│   │   └── seed.js          # One-time data migration helper
+│   └── frontend/
+│       ├── Dockerfile       # Multi-stage: Vite build → nginx:alpine
+│       ├── nginx.conf       # Serves SPA; proxies /api/ → backend:3001
+│       ├── index.html       # HTML entry point
+│       ├── vite.config.js
+│       ├── src/
+│       │   ├── main.jsx             # React entry point
+│       │   ├── App.jsx              # Root layout, zoom/pan controls
+│       │   ├── App.css              # Global styles
+│       │   ├── api.js               # REST client (fetch wrappers)
+│       │   ├── constants.js         # Asset/buffer kinds, translations
+│       │   ├── context/
+│       │   │   └── AppContext.jsx   # Global state (locations, selection, view)
+│       │   ├── hooks/
+│       │   │   └── useCanvasKit.js  # Loads CanvasKit WASM + fonts
+│       │   └── components/
+│       │       ├── Topbar.jsx       # Relation/location switcher
+│       │       ├── Legend.jsx       # Map legend + zoom buttons
+│       │       ├── Modal.jsx        # Create-entity dialog
+│       │       ├── Toast.jsx        # Notification banner
+│       │       ├── canvas/
+│       │       │   ├── CanvasView.jsx  # WebGL surface, pan/zoom/hit-test
+│       │       │   ├── renderer.js     # Skia draw calls (all entities)
+│       │       │   └── layout.js       # Layout algorithm (positions/sizes)
+│       │       └── panel/
+│       │           ├── Panel.jsx       # Entity detail/edit forms
+│       │           └── PanelSection.jsx
+│       └── public/
+│           ├── canvaskit.wasm          # Skia CanvasKit WASM binary
+│           ├── NotoSans-Regular.ttf    # Sans-serif font for canvas labels
+│           └── NotoMono-Regular.ttf   # Monospace font for canvas labels
 ```
+
+---
+
+## Running with Docker (recommended)
+
+```bash
+docker compose up --build
+```
+
+This starts both services:
+
+| Service | Container port | Host port |
+|---|---|---|
+| frontend (nginx) | 80 | 5173 |
+| backend (Express) | 3001 | 3001 |
+
+Then open **http://localhost:5173** in your browser.
+
+`db.json` is bind-mounted into the backend container so data persists across restarts. To reset, delete or empty `apps/backend/db.json` and restart.
+
+### How the Docker setup works
+
+- **Backend** — built from `apps/backend/Dockerfile` using `node:22-slim`. Installs `python3`/`make`/`g++` to compile the `better-sqlite3` native addon, then runs `npm start`.
+- **Frontend** — built from `apps/frontend/Dockerfile` using a two-stage build: a `node:22-alpine` builder runs `vite build`, and the resulting `dist/` is copied into an `nginx:alpine` image. The nginx config proxies all `/api/` requests to `backend:3001`, so the frontend never needs to know the backend's host at runtime.
+
+---
+
+## Running without Docker
+
+### Prerequisites
+
+| Requirement | Version |
+|---|---|
+| Node.js | 20 or higher |
+| npm | bundled with Node |
+| Modern browser | Chrome / Edge recommended (WebGL required for CanvasKit) |
+
+### All services at once (root workspace)
+
+```bash
+npm install
+npm run dev   # starts backend + frontend concurrently
+```
+
+### Individual services
+
+```bash
+# Backend — port 3001
+npm run dev:backend
+
+# Frontend — port 5173
+npm run dev:frontend
+```
+
+Or directly inside each app:
+
+```bash
+# Terminal 1 — backend
+cd apps/backend
+npm install
+npm run dev        # node --watch server.js (auto-restart)
+
+# Terminal 2 — frontend
+cd apps/frontend
+npm install
+npm run dev        # Vite dev server at http://localhost:5173
+```
+
+> **Note:** When running without Docker the frontend Vite dev server proxies `/api/` to `http://localhost:3001` directly. Both services must be running.
 
 ---
 
@@ -59,25 +139,14 @@ hch-cms-samax/
 | Rendering | [canvaskit-wasm](https://www.npmjs.com/package/canvaskit-wasm) 0.39.1 (Skia via WebGL) |
 | Framework | React 18 with Context API |
 | Build | Vite 5 |
+| Production server | nginx:alpine (Docker) |
 | Fonts (canvas) | Noto Sans + Noto Sans Mono (TTF, served locally) |
-
-### Running the frontend
-
-```bash
-cd frontend-react
-npm install
-npm run dev        # dev server at http://localhost:5173
-npm run build      # production build → dist/
-npm run preview    # preview the production build locally
-```
-
-> **Note:** The backend must be running on port `3001` for API calls to succeed.
 
 ---
 
 ## Backend
 
-**Express.js** REST API on port `3001`. Data is persisted in `db.json` (JSON flat-file, read/written on every request — suitable for prototype use).
+**Express.js** REST API on port `3001`. Data is persisted in a **SQLite** database via `better-sqlite3`.
 
 ### Data hierarchy
 
@@ -98,45 +167,6 @@ Relations
         └── AllocationPoints → SupplyContracts
         └── GridContracts
 ```
-
-### Running the backend
-
-```bash
-cd backend
-npm install
-npm start          # production — node server.js
-npm run dev        # development — node --watch server.js (auto-restart)
-```
-
----
-
-## Prerequisites
-
-| Requirement | Version |
-|---|---|
-| Node.js | 18 or higher |
-| npm | bundled with Node |
-| Modern browser | Chrome / Edge recommended (WebGL required for CanvasKit) |
-
----
-
-## Getting started
-
-Open two terminals:
-
-```bash
-# Terminal 1 — backend
-cd backend
-npm install
-npm start
-
-# Terminal 2 — frontend
-cd frontend-react
-npm install
-npm run dev
-```
-
-Then open **http://localhost:5173** in your browser.
 
 ---
 
