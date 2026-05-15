@@ -1,24 +1,10 @@
 services:
-  backend:
-    build:
-      context: .
-      dockerfile: apps/backend/Dockerfile
-    ports:
-      - "3001:3001"
-    volumes:
-      - ./apps/backend/db.json:/app/apps/backend/db.json
-    environment:
-      # "host.docker.internal" resolves to the host machine from inside the container
-      MICROSERVICE_URL: https://host.docker.internal:23337
-    extra_hosts:
-      # Needed on Linux Docker; Docker Desktop (Win/Mac) provides this automatically
-      - "host.docker.internal:host-gateway"
-
   frontend:
     build:
       context: .
       dockerfile: apps/frontend/Dockerfile
     ports:
       - "5173:80"
-    depends_on:
-      - backend
+    extra_hosts:
+      # Needed on Linux Docker; Docker Desktop (Win/Mac) provides this automatically
+      - "host.docker.internal:host-gateway"

@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "generate-api": "openapi-ts"
   },
   "dependencies": {
     "konva": "^9",
@@ -15,6 +16,7 @@
     "react-konva": "^18"
   },
   "devDependencies": {
+    "@hey-api/openapi-ts": "^0.75.0",
     "@vitejs/plugin-react": "^4.3.1",
     "vite": "^5.4.0"
   }

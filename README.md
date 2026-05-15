@@ -2,55 +2,70 @@
 
 A content management tool for modelling greenhouse locations and their energy infrastructure: gas/electricity connections, assets (WKK, boilers, batteries, CO₂ installations, heat pumps), capacity profiles, cultivation periods, and supply contracts.
 
+Data is served entirely by the **Assets API** microservice. 
+
 ---
 
 ## Architecture
 
-The repository is an **npm workspace monorepo** with two apps and a shared root configuration.
+```
+Frontend (React + Vite)
+  └── api.js  ──HTTP──▶  proxy (/api/*)
+                              └──▶  Assets API  :23337
+```
+
+The repository is an **npm workspace monorepo** with a single app and a docs folder.
 
 ```
 hch-cms-prototype/
-├── package.json             # Workspace root — scripts for dev/build
-├── docker-compose.yml       # Orchestrates backend + frontend containers
+├── package.json                  # Workspace root — dev/build scripts
+├── docker-compose.yml            # Orchestrates the frontend container
 ├── apps/
-│   ├── backend/
-│   │   ├── Dockerfile       # node:22-slim image (builds better-sqlite3)
-│   │   ├── server.js        # Express REST API
-│   │   ├── db.js            # SQLite database setup (better-sqlite3)
-│   │   ├── db.json          # Seed / legacy data file
-│   │   └── seed.js          # One-time data migration helper
+│   ├── doc/
+│   │   └── api.json              # Partial OpenAPI spec (reference only)
 │   └── frontend/
-│       ├── Dockerfile       # Multi-stage: Vite build → nginx:alpine
-│       ├── nginx.conf       # Serves SPA; proxies /api/ → backend:3001
-│       ├── index.html       # HTML entry point
-│       ├── vite.config.js
-│       ├── src/
-│       │   ├── main.jsx             # React entry point
-│       │   ├── App.jsx              # Root layout, zoom/pan controls
-│       │   ├── App.css              # Global styles
-│       │   ├── api.js               # REST client (fetch wrappers)
-│       │   ├── constants.js         # Asset/buffer kinds, translations
-│       │   ├── context/
-│       │   │   └── AppContext.jsx   # Global state (locations, selection, view)
-│       │   ├── hooks/
-│       │   │   └── useCanvasKit.js  # Loads CanvasKit WASM + fonts
-│       │   └── components/
-│       │       ├── Topbar.jsx       # Relation/location switcher
-│       │       ├── Legend.jsx       # Map legend + zoom buttons
-│       │       ├── Modal.jsx        # Create-entity dialog
-│       │       ├── Toast.jsx        # Notification banner
-│       │       ├── canvas/
-│       │       │   ├── CanvasView.jsx  # WebGL surface, pan/zoom/hit-test
-│       │       │   ├── renderer.js     # Skia draw calls (all entities)
-│       │       │   └── layout.js       # Layout algorithm (positions/sizes)
-│       │       └── panel/
-│       │           ├── Panel.jsx       # Entity detail/edit forms
-│       │           └── PanelSection.jsx
-│       └── public/
-│           ├── canvaskit.wasm          # Skia CanvasKit WASM binary
-│           ├── NotoSans-Regular.ttf    # Sans-serif font for canvas labels
-│           └── NotoMono-Regular.ttf   # Monospace font for canvas labels
+│       ├── Dockerfile            # Multi-stage: Vite build → nginx:alpine
+│       ├── nginx.conf            # Serves SPA; proxies /api/ → microservice
+│       ├── openapi-ts.config.js  # API client code-generator config
+│       ├── index.html
+│       ├── vite.config.js        # Dev proxy: /api/ → https://localhost:23337
+│       └── src/
+│           ├── main.jsx
+│           ├── App.jsx           # Root layout, zoom/pan controls
+│           ├── App.css
+│           ├── api.js            # Configures generated client; legacy api export
+│           ├── constants.js      # Asset/buffer kinds, Dutch label translations
+│           ├── generated/
+│           │   └── api/          # AUTO-GENERATED — do not edit by hand
+│           │       ├── sdk.gen.ts    # One typed function per microservice operation
+│           │       ├── types.gen.ts  # TypeScript types for every DTO
+│           │       └── client.gen.ts
+│           ├── context/
+│           │   └── AppContext.jsx
+│           ├── hooks/
+│           │   └── useCanvasKit.js
+│           └── components/
+│               ├── Topbar.jsx
+│               ├── Legend.jsx
+│               ├── Modal.jsx
+│               ├── Toast.jsx
+│               ├── canvas/
+│               │   ├── CanvasView.jsx
+│               │   ├── renderer.js
+│               │   └── layout.js
+│               └── panel/
+│                   ├── Panel.jsx
+│                   └── PanelSection.jsx
 ```
+
+---
+
+## Prerequisites
+
+| Requirement | Notes |
+|---|---|
+| Node.js 20+ | |
+| Assets API | Must be running and reachable at `https://localhost:23337` |
 
 ---
 
@@ -60,93 +75,61 @@ hch-cms-prototype/
 docker compose up --build
 ```
 
-This starts both services:
-
 | Service | Container port | Host port |
 |---|---|---|
 | frontend (nginx) | 80 | 5173 |
-| backend (Express) | 3001 | 3001 |
 
-Then open **http://localhost:5173** in your browser.
+Then open **http://localhost:5173**.
 
-`db.json` is bind-mounted into the backend container so data persists across restarts. To reset, delete or empty `apps/backend/db.json` and restart.
-
-### How the Docker setup works
-
-- **Backend** — built from `apps/backend/Dockerfile` using `node:22-slim`. Installs `python3`/`make`/`g++` to compile the `better-sqlite3` native addon, then runs `npm start`.
-- **Frontend** — built from `apps/frontend/Dockerfile` using a two-stage build: a `node:22-alpine` builder runs `vite build`, and the resulting `dist/` is copied into an `nginx:alpine` image. The nginx config proxies all `/api/` requests to `backend:3001`, so the frontend never needs to know the backend's host at runtime.
+nginx proxies all `/api/` requests to `https://host.docker.internal:23337`, so the container reaches the microservice running on the host machine.
 
 ---
 
 ## Running without Docker
 
-### Prerequisites
-
-| Requirement | Version |
-|---|---|
-| Node.js | 20 or higher |
-| npm | bundled with Node |
-| Modern browser | Chrome / Edge recommended (WebGL required for CanvasKit) |
-
-### All services at once (root workspace)
-
 ```bash
 npm install
-npm run dev   # starts backend + frontend concurrently
+npm run dev   # Vite dev server at http://localhost:5173
 ```
 
-### Individual services
-
-```bash
-# Backend — port 3001
-npm run dev:backend
-
-# Frontend — port 5173
-npm run dev:frontend
-```
-
-Or directly inside each app:
-
-```bash
-# Terminal 1 — backend
-cd apps/backend
-npm install
-npm run dev        # node --watch server.js (auto-restart)
-
-# Terminal 2 — frontend
-cd apps/frontend
-npm install
-npm run dev        # Vite dev server at http://localhost:5173
-```
-
-> **Note:** When running without Docker the frontend Vite dev server proxies `/api/` to `http://localhost:3001` directly. Both services must be running.
+The Vite dev server proxies `/api/` to `https://localhost:23337` (self-signed cert is accepted automatically). The microservice must be running before the frontend will load data.
 
 ---
 
 ## Frontend
 
-**React 18 + Vite 5**, rendered onto a **Skia CanvasKit** (WebGL) surface.
+**React 18 + Vite 5**, rendered onto a **Konva** (Canvas 2D) surface.
 
-- **Canvas view** — zoomable/pannable schematic of the selected location rendered entirely in Skia. Entities (greenhouses, assets, buffers, connections) are drawn as styled shapes with labels. Click to select; scroll to zoom; drag to pan; press `F` to fit.
-- **Side panel** — collapsible section forms for the selected entity. Navigates the full data hierarchy; saves via REST on submit.
+- **Canvas view** — zoomable/pannable schematic of the selected location. Entities (greenhouses, assets, buffers, connections) are drawn as styled shapes. Click to select; scroll to zoom; drag to pan.
+- **Side panel** — collapsible section forms for the selected entity. Saves via REST on submit.
 - **Top bar** — filter by relation, switch between locations.
-- **Relation lines** — toggle overlay lines from connections/allocation points to their linked assets.
 
 ### Technology choices
 
 | Concern | Solution |
 |---|---|
-| Rendering | [canvaskit-wasm](https://www.npmjs.com/package/canvaskit-wasm) 0.39.1 (Skia via WebGL) |
+| Rendering | Konva / react-konva |
 | Framework | React 18 with Context API |
 | Build | Vite 5 |
 | Production server | nginx:alpine (Docker) |
-| Fonts (canvas) | Noto Sans + Noto Sans Mono (TTF, served locally) |
+| API client | `@hey-api/openapi-ts` (auto-generated from live spec) |
 
 ---
 
-## Backend
+## API client code generation
 
-**Express.js** REST API on port `3001`. Data is persisted in a **SQLite** database via `better-sqlite3`.
+The API client in `src/generated/api/` is auto-generated from the Samax Assets API OpenAPI spec. Regenerate it whenever the microservice adds or changes endpoints:
+
+```bash
+# Microservice must be running at http://localhost:10714
+npm run generate-api --workspace=frontend
+```
+
+This reads `http://localhost:10714/swagger/v1/swagger.json` and overwrites `src/generated/api/`. The generated functions are exported directly from `api.js`, so new endpoints are immediately available:
+
+```js
+import { yourNewEndpointGetAll } from './api';
+```
 
 ### Data hierarchy
 
@@ -156,37 +139,14 @@ Relations
     ├── Greenhouses
     │   ├── Cultivations
     │   └── Assets  (WKK · Boiler · EBoiler · Solar · Battery · HeatPump ·
-    │       │         HeatStorage · CO2Asset · HeatNetwork · GasLoad ·
-    │       │         OperatingLoad · Lighting)
-    │       └── Capacities
-    ├── Buffers  (Heat · CO2)
+    │       └── CapacityProfiles   HeatStorage · CO₂ · HeatNetwork · GasLoad · Lighting)
+    ├── HeatBuffers
     ├── GasConnections
-    │   └── AllocationPoints → SupplyContracts
-    │   └── GridContracts
+    │   ├── AllocationPoints → SupplyContracts
+    │   └── GasGridContracts
     └── ElectricityConnections
-        └── AllocationPoints → SupplyContracts
-        └── GridContracts
+        ├── AllocationPoints → SupplyContracts
+        └── ElectricityGridContracts
 ```
 
----
-
-## API overview
-
-All routes are prefixed with `/api/`. `GET /api/locations` returns the full nested tree in a single response.
-
-| Resource | Endpoints |
-|---|---|
-| Relations | `GET/POST /api/relations` · `PUT/DELETE /api/relations/:id` |
-| Locations | `GET/POST /api/locations` · `GET/PUT/DELETE /api/locations/:id` |
-| Greenhouses | `POST /api/locations/:locId/greenhouses` · `PUT/DELETE /api/greenhouses/:id` |
-| Cultivations | `POST /api/greenhouses/:ghId/cultivations` · `PUT/DELETE /api/cultivations/:id` |
-| Assets | `POST /api/greenhouses/:ghId/assets` · `PUT/DELETE /api/assets/:id` |
-| Capacities | `POST /api/assets/:assetId/capacities` · `PUT/DELETE /api/capacities/:id` |
-| Buffers | `POST /api/locations/:locId/buffers` · `PUT/DELETE /api/buffers/:id` |
-| Gas connections | `POST /api/locations/:locId/gasconnections` · `PUT/DELETE /api/gasconnections/:id` |
-| Electricity connections | `POST /api/locations/:locId/electricityconnections` · `PUT/DELETE /api/electricityconnections/:id` |
-| Allocation points (gas) | `POST /api/gasconnections/:connId/allocationpoints` · `PUT/DELETE /api/allocationpoints/:id` |
-| Allocation points (elec) | `POST /api/electricityconnections/:connId/allocationpoints` |
-| Supply contracts | `POST /api/allocationpoints/:apId/contracts` · `PUT/DELETE /api/supplycontracts/:id` |
-| Gas grid contracts | `POST /api/gasconnections/:connId/gasgridcontracts` · `PUT/DELETE /api/gasgridcontracts/:id` |
-| Electricity grid contracts | `POST /api/electricityconnections/:connId/electricitygridcontracts` · `PUT/DELETE /api/electricitygridcontracts/:id` |
+The microservice uses flat routes — parent IDs are passed in the request body, not the URL path. `GET /api/Location` returns the full nested tree including greenhouses in a single response.
