@@ -1,0 +1,4532 @@
+{
+  "x-generator": "NSwag v14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))",
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Samax Assets API",
+    "description": "<strong>Samax Assets API</strong><p>Maintains the 'Stamdata' as it is called at Samax.</p>\n                <p>It is used by the <strong>Assets-Grid</strong> application to maintian the data via simple CRUD methods.</p>\n                <p>It also has <strong>models that extend beyond</strong> what is in managed by the CRUD operations. These are used internally by directly accessing the database. This is to be changed over time.</p>\n                <p>There are also methods that extract complete models from the database. These are used to provide data to the <strong>Price</strong> application. These methods will become depricated over time as all data will be accessed and then stored in the <strong>DataCollection</strong> application. These models are preceded by the letters DC for DataCollection.</p>",
+    "version": "v0.2"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:10714"
+    }
+  ],
+  "paths": {
+    "/api/AllocationPoint": {
+      "get": {
+        "tags": [
+          "AllocationPoint"
+        ],
+        "operationId": "AllocationPoint_GetAll",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AllocationPointDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "AllocationPoint"
+        ],
+        "operationId": "AllocationPoint_Create",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AllocationPointUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AllocationPointDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "422": {
+            "description": ""
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "AllocationPoint"
+        ],
+        "operationId": "AllocationPoint_Update",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AllocationPointUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AllocationPointDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "422": {
+            "description": ""
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "AllocationPoint"
+        ],
+        "operationId": "AllocationPoint_Delete",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AllocationPointUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/AllocationPoint/{id}": {
+      "get": {
+        "tags": [
+          "AllocationPoint"
+        ],
+        "operationId": "AllocationPoint_GetById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AllocationPointDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/Asset": {
+      "get": {
+        "tags": [
+          "Asset"
+        ],
+        "operationId": "Asset_GetAll",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AssetDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Asset"
+        ],
+        "operationId": "Asset_Create",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "422": {
+            "description": ""
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Asset"
+        ],
+        "operationId": "Asset_Update",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "422": {
+            "description": ""
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Asset"
+        ],
+        "operationId": "Asset_Delete",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/Asset/WKK": {
+      "get": {
+        "tags": [
+          "Asset"
+        ],
+        "operationId": "Asset_GetAllWKK",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AssetDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/Asset/HeatNetwork": {
+      "get": {
+        "tags": [
+          "Asset"
+        ],
+        "operationId": "Asset_GetAllHeatNetwork",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AssetDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/Asset/CO2": {
+      "get": {
+        "tags": [
+          "Asset"
+        ],
+        "operationId": "Asset_GetAllCo2",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AssetDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/Asset/Solar": {
+      "get": {
+        "tags": [
+          "Asset"
+        ],
+        "operationId": "Asset_GetAllSolar",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AssetDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/Asset/Boiler": {
+      "get": {
+        "tags": [
+          "Asset"
+        ],
+        "operationId": "Asset_GetAllBoiler",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AssetDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/Asset/EBoiler": {
+      "get": {
+        "tags": [
+          "Asset"
+        ],
+        "operationId": "Asset_GetAllEBoiler",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AssetDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/Asset/HeatPump": {
+      "get": {
+        "tags": [
+          "Asset"
+        ],
+        "operationId": "Asset_GetAllHeatPump",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AssetDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/Asset/{id}": {
+      "get": {
+        "tags": [
+          "Asset"
+        ],
+        "operationId": "Asset_GetById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/CapacityProfile": {
+      "get": {
+        "tags": [
+          "CapacityProfile"
+        ],
+        "operationId": "CapacityProfile_GetAll",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CapacityProfileDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "CapacityProfile"
+        ],
+        "operationId": "CapacityProfile_Create",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapacityProfileUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CapacityProfileDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "422": {
+            "description": ""
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "CapacityProfile"
+        ],
+        "operationId": "CapacityProfile_Update",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapacityProfileUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CapacityProfileDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "422": {
+            "description": ""
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "CapacityProfile"
+        ],
+        "operationId": "CapacityProfile_Delete",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapacityProfileUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/CapacityProfile/{id}": {
+      "get": {
+        "tags": [
+          "CapacityProfile"
+        ],
+        "operationId": "CapacityProfile_GetById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CapacityProfileDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/Cultivation": {
+      "get": {
+        "tags": [
+          "Cultivation"
+        ],
+        "operationId": "Cultivation_GetAll",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CultivationDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Cultivation"
+        ],
+        "operationId": "Cultivation_Create",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CultivationUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CultivationDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "422": {
+            "description": ""
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Cultivation"
+        ],
+        "operationId": "Cultivation_Update",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CultivationUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CultivationDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "422": {
+            "description": ""
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Cultivation"
+        ],
+        "operationId": "Cultivation_Delete",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CultivationUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/Cultivation/{id}": {
+      "get": {
+        "tags": [
+          "Cultivation"
+        ],
+        "operationId": "Cultivation_GetById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CultivationDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/ElectricityConnection": {
+      "get": {
+        "tags": [
+          "ElectricityConnection"
+        ],
+        "operationId": "ElectricityConnection_GetAll",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ElectricityConnectionDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "ElectricityConnection"
+        ],
+        "operationId": "ElectricityConnection_Create",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ElectricityConnectionUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ElectricityConnectionDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "422": {
+            "description": ""
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "ElectricityConnection"
+        ],
+        "operationId": "ElectricityConnection_Update",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ElectricityConnectionUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ElectricityConnectionDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "422": {
+            "description": ""
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "ElectricityConnection"
+        ],
+        "operationId": "ElectricityConnection_Delete",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ElectricityConnectionUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/ElectricityConnection/{id}": {
+      "get": {
+        "tags": [
+          "ElectricityConnection"
+        ],
+        "operationId": "ElectricityConnection_GetById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ElectricityConnectionDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/ElectricityGridContract": {
+      "get": {
+        "tags": [
+          "ElectricityGridContract"
+        ],
+        "operationId": "ElectricityGridContract_GetAll",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ElectricityGridContractDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "ElectricityGridContract"
+        ],
+        "operationId": "ElectricityGridContract_Create",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ElectricityGridContractUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ElectricityGridContractDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "422": {
+            "description": ""
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "ElectricityGridContract"
+        ],
+        "operationId": "ElectricityGridContract_Update",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ElectricityGridContractUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ElectricityGridContractDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "422": {
+            "description": ""
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "ElectricityGridContract"
+        ],
+        "operationId": "ElectricityGridContract_Delete",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ElectricityGridContractUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/EmergencyPowerPool": {
+      "get": {
+        "tags": [
+          "EmergencyPowerPool"
+        ],
+        "operationId": "EmergencyPowerPool_GetAll",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EmergencyPowerPoolDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "EmergencyPowerPool"
+        ],
+        "operationId": "EmergencyPowerPool_Create",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmergencyPowerPoolUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmergencyPowerPoolDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "422": {
+            "description": ""
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "EmergencyPowerPool"
+        ],
+        "operationId": "EmergencyPowerPool_Update",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmergencyPowerPoolUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmergencyPowerPoolDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "422": {
+            "description": ""
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "EmergencyPowerPool"
+        ],
+        "operationId": "EmergencyPowerPool_Delete",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmergencyPowerPoolUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/EmergencyPowerPool/{id}": {
+      "get": {
+        "tags": [
+          "EmergencyPowerPool"
+        ],
+        "operationId": "EmergencyPowerPool_GetById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmergencyPowerPoolDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/EmergencyPowerPool/location/{publicLocationId}": {
+      "get": {
+        "tags": [
+          "EmergencyPowerPool"
+        ],
+        "operationId": "EmergencyPowerPool_GetByPublicLocationId",
+        "parameters": [
+          {
+            "name": "publicLocationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmergencyPowerPoolDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/GasConnection": {
+      "get": {
+        "tags": [
+          "GasConnection"
+        ],
+        "operationId": "GasConnection_GetAll",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GasConnectionDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "GasConnection"
+        ],
+        "operationId": "GasConnection_Create",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GasConnectionUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GasConnectionDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "422": {
+            "description": ""
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "GasConnection"
+        ],
+        "operationId": "GasConnection_Update",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GasConnectionUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GasConnectionDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "422": {
+            "description": ""
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "GasConnection"
+        ],
+        "operationId": "GasConnection_Delete",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GasConnectionUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/GasConnection/{id}": {
+      "get": {
+        "tags": [
+          "GasConnection"
+        ],
+        "operationId": "GasConnection_GetById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GasConnectionDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/GasGridContract": {
+      "get": {
+        "tags": [
+          "GasGridContract"
+        ],
+        "operationId": "GasGridContract_GetAll",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GasGridContractDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "GasGridContract"
+        ],
+        "operationId": "GasGridContract_Create",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GasGridContractUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GasGridContractDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "422": {
+            "description": ""
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "GasGridContract"
+        ],
+        "operationId": "GasGridContract_Update",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GasGridContractUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GasGridContractDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "422": {
+            "description": ""
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "GasGridContract"
+        ],
+        "operationId": "GasGridContract_Delete",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GasGridContractUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/GasGridContract/{id}": {
+      "get": {
+        "tags": [
+          "GasGridContract"
+        ],
+        "operationId": "GasGridContract_GetById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GasGridContractDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/Greenhouse": {
+      "get": {
+        "tags": [
+          "Greenhouse"
+        ],
+        "operationId": "Greenhouse_GetAll",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GreenhouseDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Greenhouse"
+        ],
+        "operationId": "Greenhouse_Create",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GreenhouseUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GreenhouseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "422": {
+            "description": ""
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Greenhouse"
+        ],
+        "operationId": "Greenhouse_Update",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GreenhouseUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GreenhouseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "422": {
+            "description": ""
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Greenhouse"
+        ],
+        "operationId": "Greenhouse_Delete",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GreenhouseUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/Greenhouse/{id}": {
+      "get": {
+        "tags": [
+          "Greenhouse"
+        ],
+        "operationId": "Greenhouse_GetById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GreenhouseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/HeatBuffer": {
+      "get": {
+        "tags": [
+          "HeatBuffer"
+        ],
+        "operationId": "HeatBuffer_GetAll",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/HeatBufferDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "HeatBuffer"
+        ],
+        "operationId": "HeatBuffer_Create",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HeatBufferUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HeatBufferDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "422": {
+            "description": ""
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "HeatBuffer"
+        ],
+        "operationId": "HeatBuffer_Update",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HeatBufferUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HeatBufferDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "422": {
+            "description": ""
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "HeatBuffer"
+        ],
+        "operationId": "HeatBuffer_Delete",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HeatBufferUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/HeatBuffer/{id}": {
+      "get": {
+        "tags": [
+          "HeatBuffer"
+        ],
+        "operationId": "HeatBuffer_GetById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HeatBufferDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/Location": {
+      "get": {
+        "tags": [
+          "Location"
+        ],
+        "operationId": "Location_GetAll",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LocationDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Location"
+        ],
+        "operationId": "Location_Create",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocationUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LocationDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "422": {
+            "description": ""
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Location"
+        ],
+        "operationId": "Location_Update",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocationUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LocationDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "422": {
+            "description": ""
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Location"
+        ],
+        "operationId": "Location_Delete",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocationUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/Location/{id}": {
+      "get": {
+        "tags": [
+          "Location"
+        ],
+        "operationId": "Location_GetById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LocationDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/Relation": {
+      "get": {
+        "tags": [
+          "Relation"
+        ],
+        "operationId": "Relation_GetAll",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RelationDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Relation"
+        ],
+        "operationId": "Relation_Create",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RelationUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RelationDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "422": {
+            "description": ""
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Relation"
+        ],
+        "operationId": "Relation_Update",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RelationUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RelationDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "422": {
+            "description": ""
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Relation"
+        ],
+        "operationId": "Relation_Delete",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RelationUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/Relation/{id}": {
+      "get": {
+        "tags": [
+          "Relation"
+        ],
+        "operationId": "Relation_GetById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RelationDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/SupplyContract": {
+      "get": {
+        "tags": [
+          "SupplyContract"
+        ],
+        "operationId": "SupplyContract_GetAll",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SupplyContractDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "SupplyContract"
+        ],
+        "operationId": "SupplyContract_Create",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SupplyContractUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupplyContractDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "422": {
+            "description": ""
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "SupplyContract"
+        ],
+        "operationId": "SupplyContract_Update",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SupplyContractUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupplyContractDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "422": {
+            "description": ""
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "SupplyContract"
+        ],
+        "operationId": "SupplyContract_Delete",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SupplyContractUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/SupplyContract/{id}": {
+      "get": {
+        "tags": [
+          "SupplyContract"
+        ],
+        "operationId": "SupplyContract_GetById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupplyContractDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/Supply": {
+      "get": {
+        "tags": [
+          "Supply"
+        ],
+        "operationId": "Supply_GetAll",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SupplyDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Supply"
+        ],
+        "operationId": "Supply_Create",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SupplyUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupplyDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "422": {
+            "description": ""
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Supply"
+        ],
+        "operationId": "Supply_Update",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SupplyUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupplyDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          },
+          "422": {
+            "description": ""
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Supply"
+        ],
+        "operationId": "Supply_Delete",
+        "requestBody": {
+          "x-name": "dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SupplyUpdateDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/Supply/{id}": {
+      "get": {
+        "tags": [
+          "Supply"
+        ],
+        "operationId": "Supply_GetById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupplyDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "LocationDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/LocationBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "emergencyPowerPool": {
+                "nullable": true,
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/EmergencyPowerPoolDto"
+                  }
+                ]
+              },
+              "relation": {
+                "$ref": "#/components/schemas/RelationDto"
+              },
+              "weatherProvider": {
+                "$ref": "#/components/schemas/WeatherProviderDto"
+              },
+              "bidgroup": {
+                "nullable": true,
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/BidgroupDto"
+                  }
+                ]
+              },
+              "greenhouses": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GreenhouseDto"
+                }
+              },
+              "address": {
+                "nullable": true,
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/AddressDto"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "EmergencyPowerPoolDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EmergencyPowerPoolBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "locations": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/LocationDto"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "EmergencyPowerPoolBase": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ObjectBaseTimeDto"
+          },
+          {
+            "type": "object",
+            "x-abstract": true,
+            "additionalProperties": false
+          }
+        ]
+      },
+      "ObjectBaseTimeDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ObjectBaseDto"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "dateStart": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "dateEnd": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              }
+            }
+          }
+        ]
+      },
+      "ObjectBaseDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "RelationDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/RelationBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "locations": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/LocationDto"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "RelationBase": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ObjectBaseTimeDto"
+          },
+          {
+            "type": "object",
+            "x-abstract": true,
+            "additionalProperties": false
+          }
+        ]
+      },
+      "GreenhouseDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GreenhouseBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "location": {
+                "$ref": "#/components/schemas/LocationDto"
+              },
+              "cultivations": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/CultivationDto"
+                }
+              },
+              "heatSupplies": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/HeatSupplyDto"
+                }
+              },
+              "supplies": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/SupplyDto"
+                }
+              },
+              "lightingInformation": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/LightingInformationDto"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "CultivationDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CultivationBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "greenhouse": {
+                "$ref": "#/components/schemas/GreenhouseDto"
+              },
+              "lightingSchedules": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/LightingScheduleDto"
+                }
+              },
+              "co2Schedules": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Co2ScheduleDto"
+                }
+              },
+              "cultivationElectricityCoverages": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/CultivationElectricityCoverageDto"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "AssetDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AssetBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "allocationPointAssets": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/AllocationPointAssetDto"
+                }
+              },
+              "boilerRoom": {
+                "$ref": "#/components/schemas/BoilerRoomDto"
+              },
+              "supplies": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/SupplyDto"
+                }
+              },
+              "heatStorages": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/HeatStorageDto"
+                }
+              },
+              "capacityProfiles": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/CapacityProfileDto"
+                }
+              },
+              "wkk": {
+                "nullable": true,
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/WKKDto"
+                  }
+                ]
+              },
+              "heatNetwork": {
+                "nullable": true,
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/HeatNetworkDto"
+                  }
+                ]
+              },
+              "co2": {
+                "nullable": true,
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/Co2Dto"
+                  }
+                ]
+              },
+              "solar": {
+                "nullable": true,
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/SolarDto"
+                  }
+                ]
+              },
+              "boiler": {
+                "nullable": true,
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/BoilerDto"
+                  }
+                ]
+              },
+              "eBoiler": {
+                "nullable": true,
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/EBoilerDto"
+                  }
+                ]
+              },
+              "heatPump": {
+                "nullable": true,
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/HeatPumpDto"
+                  }
+                ]
+              },
+              "agendas": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/AgendaDto"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "AllocationPointAssetDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AllocationPointAssetBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "allocationPoint": {
+                "$ref": "#/components/schemas/AllocationPointDto"
+              }
+            }
+          }
+        ]
+      },
+      "AllocationPointDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AllocationPointBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "gasConnection": {
+                "nullable": true,
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/GasConnectionDto"
+                  }
+                ]
+              },
+              "electricityConnection": {
+                "nullable": true,
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/ElectricityConnectionDto"
+                  }
+                ]
+              },
+              "allocationPointAssets": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/AllocationPointAssetDto"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "GasConnectionDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GasConnectionBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "gasGridContracts": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GasGridContractDto"
+                }
+              },
+              "allocationPoints": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/AllocationPointDto"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "GasGridContractDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GasGridContractBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "gasConnection": {
+                "$ref": "#/components/schemas/GasConnectionDto"
+              }
+            }
+          }
+        ]
+      },
+      "GasGridContractBase": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ObjectBaseTimeDto"
+          },
+          {
+            "type": "object",
+            "x-abstract": true,
+            "additionalProperties": false,
+            "properties": {
+              "gasConnectionId": {
+                "type": "string",
+                "format": "guid"
+              },
+              "contractCapacity": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "contractCapacityPrice": {
+                "type": "number",
+                "format": "decimal"
+              },
+              "boilerTaxPrice": {
+                "type": "number",
+                "format": "decimal"
+              }
+            }
+          }
+        ]
+      },
+      "GasConnectionBase": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ObjectBaseTimeDto"
+          },
+          {
+            "type": "object",
+            "x-abstract": true,
+            "additionalProperties": false,
+            "properties": {
+              "eanCode": {
+                "type": "string"
+              },
+              "meteringCompanyId": {
+                "type": "string",
+                "format": "guid",
+                "nullable": true
+              },
+              "dnoConnectionId": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "ElectricityConnectionDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ElectricityConnectionBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "electricityGridContracts": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ElectricityGridContractDto"
+                }
+              },
+              "allocationPoints": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/AllocationPointDto"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "ElectricityGridContractDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ElectricityGridContractBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "electricityConnection": {
+                "$ref": "#/components/schemas/ElectricityConnectionDto"
+              }
+            }
+          }
+        ]
+      },
+      "ElectricityGridContractBase": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ObjectBaseTimeDto"
+          },
+          {
+            "type": "object",
+            "x-abstract": true,
+            "additionalProperties": false,
+            "properties": {
+              "electricityConnectionId": {
+                "type": "string",
+                "format": "guid"
+              },
+              "yearPeak": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "yearPeakPrice": {
+                "type": "number",
+                "format": "decimal"
+              },
+              "monthPeak": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "monthPeakPrice": {
+                "type": "number",
+                "format": "decimal"
+              },
+              "fictiveImportPrice": {
+                "type": "number",
+                "format": "decimal"
+              }
+            }
+          }
+        ]
+      },
+      "ElectricityConnectionBase": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ObjectBaseTimeDto"
+          },
+          {
+            "type": "object",
+            "x-abstract": true,
+            "additionalProperties": false,
+            "properties": {
+              "eanCode": {
+                "type": "string"
+              },
+              "sellCapacity": {
+                "type": "number",
+                "format": "decimal"
+              },
+              "buyCapacity": {
+                "type": "number",
+                "format": "decimal"
+              },
+              "meteringCompanyId": {
+                "type": "string",
+                "format": "guid",
+                "nullable": true
+              },
+              "dnoConnectionId": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "AllocationPointBase": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ObjectBaseDto"
+          },
+          {
+            "type": "object",
+            "x-abstract": true,
+            "additionalProperties": false,
+            "properties": {
+              "gasConnectionId": {
+                "type": "string",
+                "format": "guid",
+                "nullable": true
+              },
+              "electricityConnectionId": {
+                "type": "string",
+                "format": "guid",
+                "nullable": true
+              },
+              "type": {
+                "$ref": "#/components/schemas/AllocationPointType"
+              },
+              "eanCode": {
+                "type": "string"
+              },
+              "dnoConnectionId": {
+                "type": "string"
+              },
+              "fictiveImportPrice": {
+                "type": "number",
+                "format": "decimal"
+              }
+            }
+          }
+        ]
+      },
+      "AllocationPointType": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "PAP",
+          "SAP"
+        ],
+        "enum": [
+          0,
+          1
+        ]
+      },
+      "AllocationPointAssetBase": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ObjectBaseTimeDto"
+          },
+          {
+            "type": "object",
+            "x-abstract": true,
+            "additionalProperties": false,
+            "properties": {
+              "assetId": {
+                "type": "string",
+                "format": "guid"
+              },
+              "allocationPointId": {
+                "type": "string",
+                "format": "guid"
+              }
+            }
+          }
+        ]
+      },
+      "SupplyDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SupplyBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "greenhouse": {
+                "$ref": "#/components/schemas/GreenhouseDto"
+              },
+              "asset": {
+                "$ref": "#/components/schemas/AssetDto"
+              }
+            }
+          }
+        ]
+      },
+      "SupplyBase": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ObjectBaseTimeDto"
+          },
+          {
+            "type": "object",
+            "x-abstract": true,
+            "additionalProperties": false,
+            "properties": {
+              "assetId": {
+                "type": "string",
+                "format": "guid"
+              },
+              "greenhouseId": {
+                "type": "string",
+                "format": "guid"
+              },
+              "cultivationNeedType": {
+                "$ref": "#/components/schemas/CultivationNeedTypeDto"
+              }
+            }
+          }
+        ]
+      },
+      "CultivationNeedTypeDto": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Heat",
+          "Electricity",
+          "CarbonDiOxide"
+        ],
+        "enum": [
+          0,
+          1,
+          2
+        ]
+      },
+      "HeatBufferDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/HeatBufferBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "heatStorage": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/HeatStorageDto"
+                }
+              },
+              "heatSupplies": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/HeatSupplyDto"
+                }
+              },
+              "heatBufferDevices": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/HeatBufferDeviceDto"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "HeatSupplyDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/HeatSupplyBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "heatBuffer": {
+                "$ref": "#/components/schemas/HeatBufferDto"
+              },
+              "greenhouse": {
+                "$ref": "#/components/schemas/GreenhouseDto"
+              }
+            }
+          }
+        ]
+      },
+      "HeatSupplyBase": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ObjectBaseTimeDto"
+          },
+          {
+            "type": "object",
+            "x-abstract": true,
+            "additionalProperties": false,
+            "properties": {
+              "heatBufferId": {
+                "type": "string",
+                "format": "guid"
+              },
+              "greenhouseId": {
+                "type": "string",
+                "format": "guid"
+              }
+            }
+          }
+        ]
+      },
+      "HeatBufferBase": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ObjectBaseDto"
+          },
+          {
+            "type": "object",
+            "x-abstract": true,
+            "additionalProperties": false
+          }
+        ]
+      },
+      "CapacityProfileDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CapacityProfileBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "asset": {
+                "$ref": "#/components/schemas/AssetDto"
+              },
+              "agendas": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/AgendaDto"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "CapacityProfileBase": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ObjectBaseTimeDto"
+          },
+          {
+            "type": "object",
+            "x-abstract": true,
+            "additionalProperties": false,
+            "properties": {
+              "assetId": {
+                "type": "string",
+                "format": "guid"
+              },
+              "gasUsage": {
+                "type": "number",
+                "format": "double"
+              },
+              "electricityUsage": {
+                "type": "number",
+                "format": "double"
+              },
+              "heatProduction": {
+                "type": "number",
+                "format": "double"
+              },
+              "electricityProduction": {
+                "type": "number",
+                "format": "double"
+              },
+              "cO2Production": {
+                "type": "number",
+                "format": "double"
+              },
+              "bidComponentId": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "WKKDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AssetExtensionBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false
+          }
+        ]
+      },
+      "AssetExtensionBase": {
+        "type": "object",
+        "x-abstract": true,
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "assetId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "asset": {
+            "$ref": "#/components/schemas/AssetDto"
+          }
+        }
+      },
+      "SolarDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AssetExtensionBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "multiplicationFactor": {
+                "type": "number",
+                "format": "double"
+              }
+            }
+          }
+        ]
+      },
+      "BoilerDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AssetExtensionBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false
+          }
+        ]
+      },
+      "EBoilerDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AssetExtensionBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false
+          }
+        ]
+      },
+      "HeatPumpDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AssetExtensionBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false
+          }
+        ]
+      },
+      "AssetBase": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ObjectBaseDto"
+          },
+          {
+            "type": "object",
+            "x-abstract": true,
+            "additionalProperties": false,
+            "properties": {
+              "boilerRoomId": {
+                "type": "string",
+                "format": "guid"
+              },
+              "assetType": {
+                "$ref": "#/components/schemas/AssetTypeDto"
+              }
+            }
+          }
+        ]
+      },
+      "AssetTypeDto": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "WKK",
+          "HeatNetwork",
+          "CO2",
+          "Solar",
+          "Boiler",
+          "EBoiler",
+          "HeatPump",
+          "Battery",
+          "GasLoad",
+          "OperatingLoad",
+          "Lighting"
+        ],
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ]
+      },
+      "CultivationBase": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ObjectBaseTimeDto"
+          },
+          {
+            "type": "object",
+            "x-abstract": true,
+            "additionalProperties": false,
+            "properties": {
+              "greenhouseId": {
+                "type": "string",
+                "format": "guid"
+              },
+              "publicId": {
+                "type": "string"
+              },
+              "squareMeters": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          }
+        ]
+      },
+      "ReservePowerTypeDto": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "AFRR",
+          "MFRR"
+        ],
+        "enum": [
+          0,
+          1
+        ]
+      },
+      "ReservePowerDirectionTypeDto": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "ReservePowerUp",
+          "ReservePowerDown"
+        ],
+        "enum": [
+          1,
+          -1
+        ]
+      },
+      "GreenhouseBase": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ObjectBaseTimeDto"
+          },
+          {
+            "type": "object",
+            "x-abstract": true,
+            "additionalProperties": false,
+            "properties": {
+              "locationId": {
+                "type": "string",
+                "format": "guid"
+              },
+              "letsGrowItemId": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "maximumElectricityUsage": {
+                "type": "number",
+                "format": "double"
+              }
+            }
+          }
+        ]
+      },
+      "LocationBase": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ObjectBaseTimeDto"
+          },
+          {
+            "type": "object",
+            "x-abstract": true,
+            "additionalProperties": false,
+            "properties": {
+              "relationId": {
+                "type": "string",
+                "format": "guid"
+              },
+              "weatherProviderId": {
+                "type": "string",
+                "format": "guid"
+              },
+              "bidgroupId": {
+                "type": "string",
+                "format": "guid",
+                "nullable": true
+              },
+              "emergencyPowerPoolId": {
+                "type": "string",
+                "format": "guid",
+                "nullable": true
+              },
+              "publicId": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "dnoName": {
+                "type": "string"
+              },
+              "dnoCustomerId": {
+                "type": "string"
+              },
+              "addressId": {
+                "type": "string",
+                "format": "guid",
+                "nullable": true
+              },
+              "planName": {
+                "type": "string"
+              },
+              "internalName": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "AllocationPointUpdateDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AllocationPointBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "userId": {
+                "type": "string",
+                "format": "guid"
+              }
+            }
+          }
+        ]
+      },
+      "AssetUpdateDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AssetBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "userId": {
+                "type": "string",
+                "format": "guid"
+              },
+              "wkk": {
+                "nullable": true,
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/WKKDto"
+                  }
+                ]
+              },
+              "heatNetwork": {
+                "nullable": true,
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/HeatNetworkDto"
+                  }
+                ]
+              },
+              "co2": {
+                "nullable": true,
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/Co2Dto"
+                  }
+                ]
+              },
+              "solar": {
+                "nullable": true,
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/SolarDto"
+                  }
+                ]
+              },
+              "boiler": {
+                "nullable": true,
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/BoilerDto"
+                  }
+                ]
+              },
+              "eBoiler": {
+                "nullable": true,
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/EBoilerDto"
+                  }
+                ]
+              },
+              "heatPump": {
+                "nullable": true,
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/HeatPumpDto"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "CapacityProfileUpdateDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CapacityProfileBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "userId": {
+                "type": "string",
+                "format": "guid"
+              }
+            }
+          }
+        ]
+      },
+      "AccessIdTypeDto": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Relation",
+          "Location",
+          "Greenhouse",
+          "Cultivation"
+        ],
+        "enum": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "ContactBase": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ObjectBaseDto"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "entraId": {
+                "type": "string",
+                "format": "guid"
+              },
+              "displayName": {
+                "type": "string"
+              },
+              "firstName": {
+                "type": "string"
+              },
+              "lastName": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string"
+              },
+              "telephone": {
+                "type": "string"
+              },
+              "relationId": {
+                "type": "string",
+                "format": "guid"
+              },
+              "description": {
+                "type": "string"
+              },
+              "allowFullAccessComparison": {
+                "type": "boolean"
+              }
+            }
+          }
+        ]
+      },
+      "ContactUpdateDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ContactBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "userId": {
+                "type": "string",
+                "format": "guid"
+              }
+            }
+          }
+        ]
+      },
+      "CultivationUpdateDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CultivationBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "userId": {
+                "type": "string",
+                "format": "guid"
+              },
+              "cultivationElectricityCoverages": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/CultivationElectricityCoverageUpdateDto"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "CultivationElectricityCoverageUpdateDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CultivationElectricityCoverageBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false
+          }
+        ]
+      },
+      "ElectricityConnectionUpdateDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ElectricityConnectionBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "userId": {
+                "type": "string",
+                "format": "guid"
+              }
+            }
+          }
+        ]
+      },
+      "ElectricityGridContractUpdateDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ElectricityGridContractBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "userId": {
+                "type": "string",
+                "format": "guid"
+              }
+            }
+          }
+        ]
+      },
+      "ElectricitySupplyContractUpdateDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ElectricitySupplyContractBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "userId": {
+                "type": "string",
+                "format": "guid"
+              }
+            }
+          }
+        ]
+      },
+      "EmergencyPowerPoolUpdateDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EmergencyPowerPoolBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "userId": {
+                "type": "string",
+                "format": "guid"
+              }
+            }
+          }
+        ]
+      },
+      "GasConnectionUpdateDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GasConnectionBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "userId": {
+                "type": "string",
+                "format": "guid"
+              }
+            }
+          }
+        ]
+      },
+      "GasGridContractUpdateDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GasGridContractBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "userId": {
+                "type": "string",
+                "format": "guid"
+              }
+            }
+          }
+        ]
+      },
+      "GreenhouseUpdateDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GreenhouseBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "userId": {
+                "type": "string",
+                "format": "guid"
+              }
+            }
+          }
+        ]
+      },
+      "HeatBufferUpdateDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/HeatBufferBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "userId": {
+                "type": "string",
+                "format": "guid"
+              }
+            }
+          }
+        ]
+      },
+      "LocationUpdateDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/LocationBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "userId": {
+                "type": "string",
+                "format": "guid"
+              }
+            }
+          }
+        ]
+      },
+      "RelationUpdateDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/RelationBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "userId": {
+                "type": "string",
+                "format": "guid"
+              }
+            }
+          }
+        ]
+      },
+      "SupplyContractDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SupplyContractBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "supplyContractRates": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/SupplyContractRateDto"
+                }
+              },
+              "supplyContractBridges": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/SupplyContractBridgeDto"
+                }
+              },
+              "supplyDnoContract": {
+                "nullable": true,
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/SupplyDnoContractDto"
+                  }
+                ]
+              },
+              "supplyVattenfallContract": {
+                "nullable": true,
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/SupplyVattenfallContractDto"
+                  }
+                ]
+              },
+              "supplyPowerhouseContract": {
+                "nullable": true,
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/SupplyPowerhouseContractDto"
+                  }
+                ]
+              },
+              "supplyOMVContract": {
+                "nullable": true,
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/SupplyOMVContractDto"
+                  }
+                ]
+              },
+              "supplyEngieContract": {
+                "nullable": true,
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/SupplyEngieContractDto"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "SupplyContractRateDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SupplyContractRateBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "supplyContract": {
+                "$ref": "#/components/schemas/SupplyContractDto"
+              },
+              "supplyContractRateType": {
+                "$ref": "#/components/schemas/SupplyContractRateTypeDto"
+              }
+            }
+          }
+        ]
+      },
+      "SupplyContractRateTypeDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SupplyContractRateTypeBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false
+          }
+        ]
+      },
+      "SupplyContractRateTypeBase": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ObjectBaseDto"
+          },
+          {
+            "type": "object",
+            "x-abstract": true,
+            "additionalProperties": false,
+            "properties": {
+              "commodityType": {
+                "$ref": "#/components/schemas/CommodityType"
+              },
+              "unit": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "CommodityType": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Gas",
+          "Elektra"
+        ],
+        "enum": [
+          0,
+          1
+        ]
+      },
+      "SupplyContractBase": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ObjectBaseTimeDto"
+          },
+          {
+            "type": "object",
+            "x-abstract": true,
+            "additionalProperties": false,
+            "properties": {
+              "supplyContractType": {
+                "nullable": true,
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/SupplyContractType"
+                  }
+                ]
+              },
+              "commodityType": {
+                "$ref": "#/components/schemas/CommodityType"
+              },
+              "contractType": {
+                "$ref": "#/components/schemas/ContractType"
+              }
+            }
+          }
+        ]
+      },
+      "SupplyContractType": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Other",
+          "Vattenfall",
+          "Powerhouse",
+          "Engie",
+          "OMV"
+        ],
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      "ContractType": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Vast",
+          "Flex",
+          "APX"
+        ],
+        "enum": [
+          0,
+          1,
+          2
+        ]
+      },
+      "SupplyContractUpdateDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SupplyContractBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "userId": {
+                "type": "string",
+                "format": "guid"
+              }
+            }
+          }
+        ]
+      },
+      "SupplyUpdateDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SupplyBase"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "userId": {
+                "type": "string",
+                "format": "guid"
+              }
+            }
+          }
+        ]
+      },
+      "SegmentsDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "segment1Interval": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "segment1Hours": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "segment2Interval": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "segment2Hours": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "segment3Interval": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "segment3Hours": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "BatteryDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "initialLevel": {
+            "type": "number",
+            "format": "double"
+          },
+          "finalLevel": {
+            "type": "number",
+            "format": "double"
+          },
+          "minCapacity": {
+            "type": "number",
+            "format": "double"
+          },
+          "maxCapacity": {
+            "type": "number",
+            "format": "double"
+          },
+          "minChargeRate": {
+            "type": "number",
+            "format": "double"
+          },
+          "maxChargeRate": {
+            "type": "number",
+            "format": "double"
+          },
+          "minDischargeRate": {
+            "type": "number",
+            "format": "double"
+          },
+          "maxDischargeRate": {
+            "type": "number",
+            "format": "double"
+          },
+          "chargeEfficiency": {
+            "type": "number",
+            "format": "double"
+          },
+          "dischargeEfficiency": {
+            "type": "number",
+            "format": "double"
+          },
+          "costpriceCycle": {
+            "type": "number",
+            "format": "double"
+          },
+          "enableSwitchPenalty": {
+            "type": "boolean"
+          },
+          "reservePowerDownBidComponentId": {
+            "type": "string"
+          },
+          "reservePowerUpBidComponentId": {
+            "type": "string"
+          }
+        }
+      },
+      "AssetScheduleType": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Daybased",
+          "Conditionbased"
+        ],
+        "enum": [
+          0,
+          1
+        ]
+      }
+    }
+  }
+}

@@ -1,14 +1,115 @@
 const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
+const https = require('https');
 const path = require('path');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '../frontend')));
 
 const DB_PATH = path.join(__dirname, 'db.json');
+
+// ── Microservice proxy ────────────────────────────────────────
+const MICROSERVICE_URL = process.env.MICROSERVICE_URL || 'https://localhost:23337';
+// Self-signed cert on the upstream service — only affects calls through upstreamAgent
+const upstreamAgent = new https.Agent({ rejectUnauthorized: false });
+
+function upstreamGet(urlPath) {
+  return new Promise((resolve, reject) => {
+    const url = new URL(urlPath, MICROSERVICE_URL);
+    https.request(
+      { hostname: url.hostname, port: url.port, path: url.pathname + url.search,
+        method: 'GET', headers: { Accept: 'application/json' }, agent: upstreamAgent },
+      (res) => {
+        let body = '';
+        res.on('data', d => body += d);
+        res.on('end', () => {
+          if (res.statusCode >= 400) return reject(new Error(`Upstream returned ${res.statusCode}`));
+          try { resolve(JSON.parse(body)); } catch (e) { reject(e); }
+        });
+      }
+    ).on('error', reject).end();
+  });
+}
+
+// Asset type endpoints and their frontend Kind values
+const ASSET_ENDPOINTS = [
+  { path: '/api/Asset/WKK',         kind: 'WKK' },
+  { path: '/api/Asset/Boiler',      kind: 'Boiler' },
+  { path: '/api/Asset/EBoiler',     kind: 'EBoiler' },
+  { path: '/api/Asset/Solar',       kind: 'Solar' },
+  { path: '/api/Asset/CO2',         kind: 'CO2Asset' },
+  { path: '/api/Asset/HeatNetwork', kind: 'HeatNetwork' },
+  { path: '/api/Asset/HeatPump',    kind: 'HeatPump' },
+];
+
+function mapAsset(a, kind) {
+  return {
+    Id: a.id,
+    Name: a.name || '',
+    Description: a.description || '',
+    Kind: kind,
+    Capacities: (a.capacityProfiles || []).map(cp => ({
+      Id: cp.id,
+      Name: cp.name || '',
+      Description: cp.description || '',
+    })),
+  };
+}
+
+function mapCultivation(c) {
+  return {
+    Id: c.id,
+    Name: c.name || '',
+    Description: c.description || '',
+    DateStart: c.dateStart || '',
+    DateEnd: c.dateEnd || null,
+    SquareMeters: c.squareMeters || 0,
+    MaximumElectricityUsage: 0,
+    Lit: false,
+    PublicId: c.publicId || '',
+    BMEXSectionId: '',
+  };
+}
+
+function mapGreenhouse(gh, assetMap, ghAssetIds) {
+  const ids = ghAssetIds[(gh.id || '').toLowerCase()] || [];
+  const assets = ids.map(id => assetMap[id]).filter(Boolean);
+  return {
+    Id: gh.id,
+    Name: gh.name || '',
+    ShortName: '',
+    Description: gh.description || '',
+    SquareMeters: 0,
+    MaximumElectricityUsage: gh.maximumElectricityUsage || 0,
+    LetsGrowItemId: gh.letsGrowItemId || 0,
+    Cultivations: (gh.cultivations || []).map(mapCultivation),
+    Assets: assets,
+    GasSupply: { Id: '', EANCode: '', DNOConnectionId: '' },
+    ElectricitySupply: { Id: '', EANCode: '', DNOConnectionId: '' },
+  };
+}
+
+function mapLocation(loc, greenhouses, assetMap, ghAssetIds) {
+  const addr = loc.address || {};
+  return {
+    Id: loc.id,
+    RelationId: loc.relationId || null,
+    PublicId: loc.publicId || 0,
+    Name: loc.name || '',
+    InternalName: loc.internalName || '',
+    PlanName: loc.planName || '',
+    Description: loc.description || '',
+    DNOName: loc.dnoName || '',
+    DNOCustomerId: loc.dnoCustomerId || '',
+    Address: { AddressLine: addr.addressLine || '', PostalCode: addr.postalCode || '', City: addr.city || '' },
+    Greenhouses: greenhouses.map(gh => mapGreenhouse(gh, assetMap, ghAssetIds)),
+    Buffers: [],
+    GasConnections: [],
+    ElectricityConnections: [],
+  };
+}
 
 const readDb = () => JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
 const writeDb = (data) => fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2));
@@ -178,7 +279,56 @@ app.delete('/api/relations/:id', (req, res) => {
 });
 
 // ── Locations ────────────────────────────────────────────────
-app.get('/api/locations', (req, res) => res.json(readDb().locations));
+app.get('/api/locations', async (req, res) => {
+  try {
+    const [locations, greenhouses, supplies, ...assetResults] = await Promise.all([
+      upstreamGet('/api/Location'),
+      upstreamGet('/api/Greenhouse'),
+      upstreamGet('/api/Supply').catch(() => []),
+      ...ASSET_ENDPOINTS.map(ep => upstreamGet(ep.path).then(list => ({ list, kind: ep.kind })).catch(() => ({ list: [], kind: ep.kind }))),
+    ]);
+
+    // Build assetId (lowercase) -> mapped asset lookup
+    const assetMap = {};
+    for (const { list, kind } of assetResults) {
+      for (const a of list) {
+        const key = (a.id || '').toLowerCase();
+        if (key) assetMap[key] = mapAsset(a, kind);
+      }
+    }
+
+    // Build greenhouseId (lowercase) -> [assetId, ...] from supplies
+    const ghAssetIds = {};
+    for (const s of supplies) {
+      const ghId  = (s.greenhouseId || '').toLowerCase();
+      const aId   = (s.assetId || '').toLowerCase();
+      if (ghId && aId) (ghAssetIds[ghId] ??= []).push(aId);
+    }
+
+    console.log(`[upstream] locations: ${locations.length}, greenhouses: ${greenhouses.length}, assets: ${Object.keys(assetMap).length}, supplies: ${supplies.length}`);
+
+    // Index greenhouses by id and locationId (lowercase for GUID casing safety)
+    const ghById = {};
+    const ghByLocationId = {};
+    for (const gh of greenhouses) {
+      ghById[(gh.id || '').toLowerCase()] = gh;
+      const locId = (gh.locationId || '').toLowerCase();
+      if (locId) (ghByLocationId[locId] ??= []).push(gh);
+    }
+
+    res.json(locations.map(loc => {
+      const locId = (loc.id || '').toLowerCase();
+      const embedded = loc.greenhouses || [];
+      const ghs = embedded.length
+        ? embedded.map(e => ghById[(e.id || '').toLowerCase()] ?? e)
+        : (ghByLocationId[locId] ?? []);
+      return mapLocation(loc, ghs, assetMap, ghAssetIds);
+    }));
+  } catch (err) {
+    console.error('Microservice error:', err.message);
+    res.status(502).json({ error: 'Could not reach upstream service', detail: err.message });
+  }
+});
 app.get('/api/locations/:id', (req, res) => {
   const loc = findLocation(readDb(), req.params.id);
   return loc ? res.json(loc) : res.status(404).json({ error: 'Not found' });

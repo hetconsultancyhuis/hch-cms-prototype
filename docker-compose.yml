@@ -6,8 +6,13 @@ services:
     ports:
       - "3001:3001"
     volumes:
-      # Bind-mount db.json so data persists across container restarts
-      - ./apps/backend/db.json:/app/db.json
+      - ./apps/backend/db.json:/app/apps/backend/db.json
+    environment:
+      # "host.docker.internal" resolves to the host machine from inside the container
+      MICROSERVICE_URL: https://host.docker.internal:23337
+    extra_hosts:
+      # Needed on Linux Docker; Docker Desktop (Win/Mac) provides this automatically
+      - "host.docker.internal:host-gateway"
 
   frontend:
     build:

@@ -9,9 +9,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "canvaskit-wasm": "^0.39.1",
+    "konva": "^9",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "react-konva": "^18"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.1",

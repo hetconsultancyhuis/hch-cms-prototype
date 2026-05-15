@@ -1,7 +1,6 @@
 import { useEffect, useCallback } from 'react';
 import './App.css';
 import { useApp } from './context/AppContext';
-import { useCanvasKit } from './hooks/useCanvasKit';
 import Topbar from './components/Topbar';
 import Legend from './components/Legend';
 import CanvasView from './components/canvas/CanvasView';
@@ -14,7 +13,6 @@ const MIN_SCALE = 0.2;
 const MAX_SCALE = 3.0;
 
 export default function App() {
-  const { ck, fonts, loading, error } = useCanvasKit();
   const app = useApp();
   const { loadData, currentLocation, view, setView, expandedCaps, toast, modal, setModal } = app;
 
@@ -49,18 +47,7 @@ export default function App() {
       <Topbar onFitView={fitView} />
       <div className="app-layout">
         <section className="stage-wrap">
-          {loading && (
-            <div className="ck-loading">
-              <div className="spinner" />
-              <span>CanvasKit laden...</span>
-            </div>
-          )}
-          {error && (
-            <div className="ck-loading">
-              <span style={{ color: 'var(--heat)' }}>Fout bij laden: {error}</span>
-            </div>
-          )}
-          {ck && fonts && <CanvasView ck={ck} fonts={fonts} />}
+          <CanvasView />
           <Legend
             onZoomIn={() => zoomBy(1.2)}
             onZoomOut={() => zoomBy(1 / 1.2)}
