@@ -1,5 +1,3 @@
-export const API_BASE = 'http://localhost:3001/api';
-
 export const ASSET_KINDS = {
   WKK:          { label: 'WKK',           color: '#b45309', tint: '#fef3c7', short: 'WK' },
   Boiler:       { label: 'Ketel',          color: '#b91c1c', tint: '#fee2e2', short: 'BL' },

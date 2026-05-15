@@ -1,19 +1,10 @@
 services:
-  backend:
-    build:
-      context: .
-      dockerfile: apps/backend/Dockerfile
-    ports:
-      - "3001:3001"
-    volumes:
-      # Bind-mount db.json so data persists across container restarts
-      - ./apps/backend/db.json:/app/db.json
-
   frontend:
     build:
       context: .
       dockerfile: apps/frontend/Dockerfile
     ports:
       - "5173:80"
-    depends_on:
-      - backend
+    extra_hosts:
+      # Needed on Linux Docker; Docker Desktop (Win/Mac) provides this automatically
+      - "host.docker.internal:host-gateway"

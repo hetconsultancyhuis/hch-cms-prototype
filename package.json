@@ -5,12 +5,7 @@
     "apps/*"
   ],
   "scripts": {
-    "dev": "concurrently \"npm run dev --workspace=backend\" \"npm run dev --workspace=frontend\"",
-    "dev:frontend": "npm run dev --workspace=frontend",
-    "dev:backend": "npm run dev --workspace=backend",
+    "dev": "npm run dev --workspace=frontend",
     "build": "npm run build --workspaces"
-  },
-  "devDependencies": {
-    "concurrently": "^9.2.1"
   }
 }

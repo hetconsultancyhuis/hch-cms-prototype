@@ -14,20 +14,35 @@ const CAP_TOGGLE_H = 18;
 const CP_GAP = 6;
 const CP_STRIDE = 40;
 const CP_BOX_H = 36;
+const CULT_SECT_PAD = 10;
+const CULT_TOGGLE_H = 16;
+const CULT_CHIP_H = 20;
+const CULT_CHIP_GAP = 4;
 const BUF_H = 64;
 const BUF_ITEM_GAP = 12;
 const BUF_SEC_GAP = 32;
 const CONN_W = 200;
-const CONN_H = 60;
+const CONN_HDR_H = 60;
 const CONN_GAP = 12;
 const CONN_SEC_GAP = 32;
+const CONN_CHILD_H = 22;
+const CONN_CHILD_GAP = 2;
+const CONN_CHILD_PAD = 6;
+const CONN_CHILD_IPAD = 6;
 
-export function buildLayout(loc, expandedCaps) {
+function connItemH(conn) {
+  const rows = (conn.AllocationPoints || []).length + (conn.GridContracts || []).length;
+  if (rows === 0) return CONN_HDR_H;
+  return CONN_HDR_H + CONN_CHILD_PAD + rows * CONN_CHILD_H + (rows - 1) * CONN_CHILD_GAP + CONN_CHILD_PAD;
+}
+
+export function buildLayout(loc, expandedCaps, expandedCults = new Set()) {
   const items = [];
   const ghs = loc.Greenhouses || [];
 
   const ghSizes = ghs.map(gh => {
     const assets = gh.Assets || [];
+    const cults = gh.Cultivations || [];
     const maxCPs = assets.reduce((m, a) => {
       const n = expandedCaps.has(a.Id) ? (a.Capacities || []).length : 0;
       return Math.max(m, n);
@@ -35,7 +50,12 @@ export function buildLayout(loc, expandedCaps) {
     const assetSectionH = assets.length > 0
       ? ASSET_H + CAP_TOGGLE_H + (maxCPs > 0 ? CP_GAP + maxCPs * CP_STRIDE : 0)
       : 0;
-    const ghH = Math.max(GH_MIN_H, GH_TOP + assetSectionH + GH_BOT);
+    const cultInnerH = CULT_TOGGLE_H +
+      (expandedCults.has(gh.Id) && cults.length > 0
+        ? cults.length * (CULT_CHIP_H + CULT_CHIP_GAP)
+        : 0);
+    const cultSectionH = CULT_SECT_PAD + cultInnerH;
+    const ghH = Math.max(GH_MIN_H, GH_TOP + assetSectionH + cultSectionH + GH_BOT);
     const totalAssetsW = assets.length > 0
       ? assets.length * ASSET_W + (assets.length - 1) * ASSET_GAP
       : 0;
@@ -55,7 +75,10 @@ export function buildLayout(loc, expandedCaps) {
   const gasConns = loc.GasConnections || [];
   const elecConns = loc.ElectricityConnections || [];
   const hasConns = gasConns.length > 0 || elecConns.length > 0;
-  const connSectionH = hasConns ? CONN_SEC_GAP + CONN_H : 0;
+  const maxConnH = hasConns
+    ? Math.max(...[...gasConns, ...elecConns].map(connItemH))
+    : 0;
+  const connSectionH = hasConns ? CONN_SEC_GAP + maxConnH : 0;
 
   const LOC_W = maxGhW + 2 * LOC_PAD;
   const LOC_H = LOC_PAD * 2 + LOC_HDR + totalGhH + bufSectionH + connSectionH;
@@ -66,10 +89,11 @@ export function buildLayout(loc, expandedCaps) {
 
   let curY = loc_y + LOC_PAD + LOC_HDR;
   ghs.forEach((gh, i) => {
-    const { ghH } = ghSizes[i];
+    const { ghH, assetSectionH } = ghSizes[i];
     const ghW = maxGhW;
     const bx = loc_x + LOC_PAD;
     const by = curY;
+    const cults = gh.Cultivations || [];
 
     items.push({ kind: 'greenhouse', x: bx, y: by, w: ghW, h: ghH, ref: gh, parents: { loc } });
 
@@ -98,6 +122,23 @@ export function buildLayout(loc, expandedCaps) {
       });
     }
 
+    // Cultivation section
+    const cultY = by + GH_TOP + assetSectionH + CULT_SECT_PAD;
+    items.push({ kind: 'cult-toggle', x: bx + GH_IPAD, y: cultY, w: ghW - 2 * GH_IPAD, h: CULT_TOGGLE_H, ref: gh, parents: { loc } });
+    if (expandedCults.has(gh.Id)) {
+      cults.forEach((c, k) => {
+        items.push({
+          kind: 'cultivation',
+          x: bx + GH_IPAD,
+          y: cultY + CULT_TOGGLE_H + k * (CULT_CHIP_H + CULT_CHIP_GAP),
+          w: ghW - 2 * GH_IPAD,
+          h: CULT_CHIP_H,
+          ref: c,
+          parents: { loc, gh },
+        });
+      });
+    }
+
     curY += ghH + GH_GAP;
   });
 
@@ -122,11 +163,67 @@ export function buildLayout(loc, expandedCaps) {
   if (hasConns) {
     const connY = loc_y + LOC_PAD + LOC_HDR + totalGhH + bufSectionH + CONN_SEC_GAP;
     const bx = loc_x + LOC_PAD;
+
     gasConns.forEach((gc, i) => {
-      items.push({ kind: 'gasconn', x: bx + GH_IPAD + i * (CONN_W + CONN_GAP), y: connY, w: CONN_W, h: CONN_H, ref: gc, parents: { loc } });
+      const gcH = connItemH(gc);
+      const cx = bx + GH_IPAD + i * (CONN_W + CONN_GAP);
+      items.push({ kind: 'gasconn', x: cx, y: connY, w: CONN_W, h: gcH, ref: gc, parents: { loc } });
+
+      const aps = gc.AllocationPoints || [];
+      const gcs = gc.GridContracts || [];
+      aps.forEach((ap, k) => {
+        items.push({
+          kind: 'allocationpoint',
+          x: cx + CONN_CHILD_IPAD,
+          y: connY + CONN_HDR_H + CONN_CHILD_PAD + k * (CONN_CHILD_H + CONN_CHILD_GAP),
+          w: CONN_W - 2 * CONN_CHILD_IPAD,
+          h: CONN_CHILD_H,
+          ref: ap,
+          parents: { conn: gc, connKind: 'gas', loc },
+        });
+      });
+      gcs.forEach((ggc, k) => {
+        items.push({
+          kind: 'gasGridContract',
+          x: cx + CONN_CHILD_IPAD,
+          y: connY + CONN_HDR_H + CONN_CHILD_PAD + aps.length * (CONN_CHILD_H + CONN_CHILD_GAP) + k * (CONN_CHILD_H + CONN_CHILD_GAP),
+          w: CONN_W - 2 * CONN_CHILD_IPAD,
+          h: CONN_CHILD_H,
+          ref: ggc,
+          parents: { conn: gc, loc },
+        });
+      });
     });
+
     elecConns.forEach((ec, j) => {
-      items.push({ kind: 'elecconn', x: bx + maxGhW - GH_IPAD - (j + 1) * CONN_W - j * CONN_GAP, y: connY, w: CONN_W, h: CONN_H, ref: ec, parents: { loc } });
+      const ecH = connItemH(ec);
+      const cx = bx + maxGhW - GH_IPAD - (j + 1) * CONN_W - j * CONN_GAP;
+      items.push({ kind: 'elecconn', x: cx, y: connY, w: CONN_W, h: ecH, ref: ec, parents: { loc } });
+
+      const aps = ec.AllocationPoints || [];
+      const gcs = ec.GridContracts || [];
+      aps.forEach((ap, k) => {
+        items.push({
+          kind: 'allocationpoint',
+          x: cx + CONN_CHILD_IPAD,
+          y: connY + CONN_HDR_H + CONN_CHILD_PAD + k * (CONN_CHILD_H + CONN_CHILD_GAP),
+          w: CONN_W - 2 * CONN_CHILD_IPAD,
+          h: CONN_CHILD_H,
+          ref: ap,
+          parents: { conn: ec, connKind: 'elec', loc },
+        });
+      });
+      gcs.forEach((egc, k) => {
+        items.push({
+          kind: 'elecGridContract',
+          x: cx + CONN_CHILD_IPAD,
+          y: connY + CONN_HDR_H + CONN_CHILD_PAD + aps.length * (CONN_CHILD_H + CONN_CHILD_GAP) + k * (CONN_CHILD_H + CONN_CHILD_GAP),
+          w: CONN_W - 2 * CONN_CHILD_IPAD,
+          h: CONN_CHILD_H,
+          ref: egc,
+          parents: { conn: ec, loc },
+        });
+      });
     });
   }
 

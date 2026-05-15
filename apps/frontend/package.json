@@ -6,14 +6,17 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "generate-api": "openapi-ts"
   },
   "dependencies": {
-    "canvaskit-wasm": "^0.39.1",
+    "konva": "^9",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "react-konva": "^18"
   },
   "devDependencies": {
+    "@hey-api/openapi-ts": "^0.75.0",
     "@vitejs/plugin-react": "^4.3.1",
     "vite": "^5.4.0"
   }
