@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { api } from '../../api';
 import { ASSET_KINDS, BUFFER_KINDS, t } from '../../constants';
+import { ENTITY_REGISTRY } from '../../entities/registry';
 import PanelSection from './PanelSection';
 
 // ── Form field helpers ────────────────────────────────────────────────────
@@ -95,30 +96,10 @@ export default function Panel() {
 
   async function save() {
     if (!payload) return;
-    const body = { ...form };
-    const endpoints = {
-      relation:         `/relations/${payload.ref.Id}`,
-      location:         `/locations/${payload.ref.Id}`,
-      greenhouse:       `/greenhouses/${payload.ref.Id}`,
-      cultivation:      `/cultivations/${payload.ref.Id}`,
-      asset:            `/assets/${payload.ref.Id}`,
-      capacity:         `/capacities/${payload.ref.Id}`,
-      buffer:           `/buffers/${payload.ref.Id}`,
-      supplycontract:   `/supplycontracts/${payload.ref.Id}`,
-      gasconn:          `/gasconnections/${payload.ref.Id}`,
-      elecconn:         `/electricityconnections/${payload.ref.Id}`,
-      allocationpoint:  `/allocationpoints/${payload.ref.Id}`,
-      gasGridContract:  `/gasgridcontracts/${payload.ref.Id}`,
-      elecGridContract: `/electricitygridcontracts/${payload.ref.Id}`,
-    };
-    const url = endpoints[kind];
-    if (!url) return;
+    const reg = ENTITY_REGISTRY[kind];
+    if (!reg?.apiUpdate) return;
     try {
-      await fetch(`http://localhost:3001/api${url}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      }).then(r => { if (!r.ok) throw new Error('Opslaan mislukt'); });
+      await reg.apiUpdate(payload.ref.Id, form);
       showToast('Opgeslagen');
       await loadData(payload.ref.Id, true);
     } catch (e) { showToast(e.message, true); }
@@ -126,32 +107,11 @@ export default function Panel() {
 
   async function del() {
     if (!payload) return;
-    const labels = {
-      relation: 'relatie', location: 'locatie', greenhouse: 'kas', cultivation: 'teelt',
-      asset: 'asset', capacity: 'capaciteitsprofiel', buffer: 'buffer',
-      supplycontract: 'leveringscontract', gasconn: 'gasaansluiting',
-      elecconn: 'elektriciteitsaansluiting', allocationpoint: 'allocatiepunt',
-      gasGridContract: 'gas netkostencontract', elecGridContract: 'elektriciteit netkostencontract',
-    };
-    if (!window.confirm(`${labels[kind] || kind} "${payload.ref.Name || payload.ref.Id}" verwijderen?`)) return;
-    const endpoints = {
-      relation:         `/relations/${payload.ref.Id}`,
-      location:         `/locations/${payload.ref.Id}`,
-      greenhouse:       `/greenhouses/${payload.ref.Id}`,
-      cultivation:      `/cultivations/${payload.ref.Id}`,
-      asset:            `/assets/${payload.ref.Id}`,
-      capacity:         `/capacities/${payload.ref.Id}`,
-      buffer:           `/buffers/${payload.ref.Id}`,
-      supplycontract:   `/supplycontracts/${payload.ref.Id}`,
-      gasconn:          `/gasconnections/${payload.ref.Id}`,
-      elecconn:         `/electricityconnections/${payload.ref.Id}`,
-      allocationpoint:  `/allocationpoints/${payload.ref.Id}`,
-      gasGridContract:  `/gasgridcontracts/${payload.ref.Id}`,
-      elecGridContract: `/electricitygridcontracts/${payload.ref.Id}`,
-    };
+    const reg = ENTITY_REGISTRY[kind];
+    if (!reg) return;
+    if (!window.confirm(`${reg.label} "${payload.ref.Name || payload.ref.Id}" verwijderen?`)) return;
     try {
-      const url = endpoints[kind];
-      await fetch(`http://localhost:3001/api${url}`, { method: 'DELETE' });
+      await reg.apiDelete(payload.ref.Id);
       setSelected(null);
       showToast('Verwijderd');
       await loadData();
@@ -664,12 +624,10 @@ export default function Panel() {
     const [checkedGhs, setCheckedGhs] = useState(new Set(bf.GreenhouseIds || []));
 
     const localSave = async () => {
-      const body = { ...form, GreenhouseIds: [...checkedGhs] };
       try {
-        await fetch(`http://localhost:3001/api/buffers/${bf.Id}`, {
-          method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
-        }).then(r => { if (!r.ok) throw new Error('Opslaan mislukt'); });
-        showToast('Opgeslagen'); await loadData(bf.Id, true);
+        await ENTITY_REGISTRY.buffer.apiUpdate(bf.Id, { ...form, GreenhouseIds: [...checkedGhs] });
+        showToast('Opgeslagen');
+        await loadData(bf.Id, true);
       } catch (e) { showToast(e.message, true); }
     };
 

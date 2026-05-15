@@ -14,7 +14,7 @@ const MAX_SCALE = 3.0;
 
 export default function App() {
   const app = useApp();
-  const { loadData, currentLocation, view, setView, expandedCaps, toast, modal, setModal } = app;
+  const { loadData, currentLocation, view, setView, expandedCaps, expandedCults, toast, modal, setModal } = app;
 
   useEffect(() => { loadData(); }, []);
 
@@ -23,13 +23,13 @@ export default function App() {
     const stageEl = document.querySelector('.stage-wrap');
     if (!stageEl) return;
     const rect = stageEl.getBoundingClientRect();
-    const layout = buildLayout(currentLocation, expandedCaps);
+    const layout = buildLayout(currentLocation, expandedCaps, expandedCults);
     const pad = 40;
     const sx = (rect.width - 2 * pad) / layout.bounds.w;
     const sy = (rect.height - 2 * pad) / layout.bounds.h;
     const scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, Math.min(sx, sy)));
     setView({ x: rect.width / 2, y: rect.height / 2, scale });
-  }, [currentLocation, expandedCaps, setView]);
+  }, [currentLocation, expandedCaps, expandedCults, setView]);
 
   function zoomBy(factor) {
     const stageEl = document.querySelector('.stage-wrap');

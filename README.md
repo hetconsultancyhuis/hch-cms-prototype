@@ -42,6 +42,8 @@ hch-cms-prototype/
 │           │       └── client.gen.ts
 │           ├── context/
 │           │   └── AppContext.jsx
+│           ├── entities/
+│           │   └── registry.js       # Entity registry — single file to touch when API adds a resource
 │           ├── hooks/
 │           │   └── useCanvasKit.js
 │           └── components/
@@ -51,7 +53,6 @@ hch-cms-prototype/
 │               ├── Toast.jsx
 │               ├── canvas/
 │               │   ├── CanvasView.jsx
-│               │   ├── renderer.js
 │               │   └── layout.js
 │               └── panel/
 │                   ├── Panel.jsx
@@ -100,8 +101,8 @@ The Vite dev server proxies `/api/` to `https://localhost:23337` (self-signed ce
 
 **React 18 + Vite 5**, rendered onto a **Konva** (Canvas 2D) surface.
 
-- **Canvas view** — zoomable/pannable schematic of the selected location. Entities (greenhouses, assets, buffers, connections) are drawn as styled shapes. Click to select; scroll to zoom; drag to pan.
-- **Side panel** — collapsible section forms for the selected entity. Saves via REST on submit.
+- **Canvas view** — zoomable/pannable schematic of the selected location. All entities are drawn as styled shapes: greenhouses (with expandable cultivation chips), assets (with expandable capacity profiles), buffers, and connections (with inline allocation points and grid contracts). Click to select; scroll to zoom; drag to pan; **F** to fit.
+- **Side panel** — collapsible section forms for the selected entity. Save and delete use the entity registry — no hardcoded URLs.
 - **Top bar** — filter by relation, switch between locations.
 
 ### Technology choices
@@ -116,22 +117,30 @@ The Vite dev server proxies `/api/` to `https://localhost:23337` (self-signed ce
 
 ---
 
+## Adding a new entity
+
+1. Run `npm run generate-api --workspace=frontend` — new SDK functions appear in `src/generated/api/`
+2. Wire them into `api.js` (one `unwrap(...)` line each)
+3. Add an entry to `src/entities/registry.js` (label, color, short badge, `apiUpdate`, `apiDelete`)
+4. Panel save/delete work automatically via the registry.
+5. For canvas visibility, add a layout item in `layout.js` and a node component in `CanvasView.jsx`.
+
+---
+
 ## API client code generation
 
-The API client in `src/generated/api/` is auto-generated from the Samax Assets API OpenAPI spec. Regenerate it whenever the microservice adds or changes endpoints:
+The API client in `src/generated/api/` is auto-generated from the Assets API OpenAPI spec. Regenerate it whenever the microservice adds or changes endpoints:
 
 ```bash
 # Microservice must be running at http://localhost:10714
 npm run generate-api --workspace=frontend
 ```
 
-This reads `http://localhost:10714/swagger/v1/swagger.json` and overwrites `src/generated/api/`. The generated functions are exported directly from `api.js`, so new endpoints are immediately available:
+This reads `http://localhost:10714/swagger/v1/swagger.json` and overwrites `src/generated/api/`. The generated functions are exported directly from `api.js`, so new endpoints are immediately available.
 
-```js
-import { yourNewEndpointGetAll } from './api';
-```
+---
 
-### Data hierarchy
+## Data hierarchy
 
 ```
 Relations

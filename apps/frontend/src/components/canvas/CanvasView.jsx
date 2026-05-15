@@ -7,12 +7,10 @@ import { ASSET_KINDS, BUFFER_KINDS } from '../../constants';
 const MIN_SCALE = 0.2;
 const MAX_SCALE = 3.0;
 
-// Unique key per item, scoped to a location so drag positions never leak between locations
 function itemKey(item, locationId = '') {
   return `${locationId}:${item.kind}:${item.ref?.Id ?? JSON.stringify(item.ref).slice(0, 32)}`;
 }
 
-// Key for selection comparison (entity id only, matches AppContext.selectItem)
 function refId(item) {
   return item.ref?.Id ?? JSON.stringify(item.ref).slice(0, 32);
 }
@@ -133,6 +131,42 @@ function CapacityNode({ item, pos, selectedRefId, onSelect }) {
   );
 }
 
+// ── Cultivation toggle ─────────────────────────────────────────────────────────
+function CultToggleNode({ item, pos, expandedCults, onSelect }) {
+  const { w, h, ref: gh } = item;
+  const count = (gh.Cultivations || []).length;
+  const expanded = expandedCults.has(gh.Id);
+  return (
+    <Group x={pos.x} y={pos.y} onClick={e => { e.cancelBubble = true; onSelect(item); }}>
+      <Rect x={0} y={0} width={w} height={h} fill="#dcfce7" cornerRadius={3} />
+      <Text x={0} y={0} width={w} height={h}
+        text={`${expanded ? '▲' : '▼'}  ${count} teelt${count !== 1 ? 'en' : ''}`}
+        fill="#15803d" fontSize={8} fontFamily="IBM Plex Mono, monospace"
+        align="center" verticalAlign="middle" />
+    </Group>
+  );
+}
+
+// ── Cultivation chip ───────────────────────────────────────────────────────────
+function CultivationNode({ item, pos, selectedRefId, onSelect }) {
+  const { w, h, ref: c } = item;
+  const sel = selectedRefId === refId(item);
+  return (
+    <Group x={pos.x} y={pos.y} onClick={e => { e.cancelBubble = true; onSelect(item); }}>
+      <Rect x={0} y={0} width={w} height={h} fill="#f0fdf4" stroke="#86efac" strokeWidth={1} cornerRadius={4} />
+      <Rect x={0} y={0} width={4} height={h} fill="#15803d" cornerRadius={[4, 0, 0, 4]} />
+      <Text x={10} y={0} width={w * 0.45 - 10} height={h}
+        text={c.Name || ''} fill="#14532d" fontSize={9}
+        fontFamily="IBM Plex Sans, sans-serif" verticalAlign="middle" ellipsis />
+      <Text x={w * 0.45} y={0} width={w * 0.55 - 4} height={h}
+        text={`${c.DateStart || '?'} – ${c.DateEnd || '∞'}`}
+        fill="#15803d" fontSize={8} fontFamily="IBM Plex Mono, monospace"
+        align="right" verticalAlign="middle" />
+      {sel && <SelectRing x={0} y={0} w={w} h={h} r={4} />}
+    </Group>
+  );
+}
+
 // ── Buffer ─────────────────────────────────────────────────────────────────────
 function BufferNode({ item, pos, selectedRefId, onSelect, onDragMove, onDragEnd }) {
   const { w, h, ref: buf } = item;
@@ -177,8 +211,46 @@ function ConnectionNode({ item, pos, kind, selectedRefId, onSelect, onDragMove, 
   );
 }
 
+// ── Allocation point row ───────────────────────────────────────────────────────
+function AllocationPointNode({ item, pos, selectedRefId, onSelect }) {
+  const { w, h, ref: ap } = item;
+  const sel = selectedRefId === refId(item);
+  return (
+    <Group x={pos.x} y={pos.y} onClick={e => { e.cancelBubble = true; onSelect(item); }}>
+      <Rect x={0} y={0} width={w} height={h} fill="#f8fafc" stroke="#e2e8f0" strokeWidth={1} cornerRadius={3} />
+      <Rect x={0} y={0} width={3} height={h} fill="#6d28d9" cornerRadius={[3, 0, 0, 3]} />
+      <Text x={8} y={0} width={24} height={h} text="AP" fill="#6d28d9" fontSize={7}
+        fontFamily="IBM Plex Mono, monospace" verticalAlign="middle" />
+      <Text x={34} y={0} width={w - 38} height={h}
+        text={`${ap.Name || ''}  ${ap.Direction || ''}`}
+        fill="#0f172a" fontSize={9} fontFamily="IBM Plex Sans, sans-serif"
+        verticalAlign="middle" ellipsis />
+      {sel && <SelectRing x={0} y={0} w={w} h={h} r={3} />}
+    </Group>
+  );
+}
+
+// ── Grid contract row ──────────────────────────────────────────────────────────
+function GridContractNode({ item, pos, selectedRefId, onSelect }) {
+  const { w, h, ref: gc } = item;
+  const isGas = item.kind === 'gasGridContract';
+  const color = isGas ? '#92400e' : '#1e40af';
+  const short = isGas ? 'GGC' : 'EGC';
+  const sel = selectedRefId === refId(item);
+  return (
+    <Group x={pos.x} y={pos.y} onClick={e => { e.cancelBubble = true; onSelect(item); }}>
+      <Rect x={0} y={0} width={w} height={h} fill="#fffbeb" stroke="#fde68a" strokeWidth={1} cornerRadius={3} />
+      <Text x={6} y={0} width={28} height={h} text={short} fill={color} fontSize={7}
+        fontFamily="IBM Plex Mono, monospace" verticalAlign="middle" />
+      <Text x={38} y={0} width={w - 42} height={h}
+        text={gc.Name || ''} fill="#0f172a" fontSize={9}
+        fontFamily="IBM Plex Sans, sans-serif" verticalAlign="middle" ellipsis />
+      {sel && <SelectRing x={0} y={0} w={w} h={h} r={3} />}
+    </Group>
+  );
+}
+
 // ── Pipe lines (asset → buffer → greenhouse) ───────────────────────────────────
-// items here are effective items (with drag positions applied)
 function PipeLines({ items }) {
   const assets      = items.filter(it => it.kind === 'asset');
   const buffers     = items.filter(it => it.kind === 'buffer');
@@ -225,11 +297,12 @@ export default function CanvasView() {
   const wrapRef    = useRef(null);
   const syncedView = useRef(null);
   const [stageSize, setStageSize] = useState({ width: 800, height: 600 });
-  const [posMap, setPosMap] = useState({});   // itemKey → { x, y } overrides from dragging
+  const [posMap, setPosMap] = useState({});
 
   const {
     currentLocation, selected, view, setView,
-    expandedCaps, setHitItems, selectItem, toggleCapExpanded,
+    expandedCaps, expandedCults,
+    setHitItems, selectItem, toggleCapExpanded, toggleCultExpanded,
   } = useApp();
 
   // Container resize
@@ -243,7 +316,7 @@ export default function CanvasView() {
     return () => ro.disconnect();
   }, []);
 
-  // Trim posMap entries that no longer belong to the current location to avoid unbounded growth
+  // Trim posMap entries that no longer belong to the current location
   useEffect(() => {
     setPosMap(prev => {
       const prefix = `${currentLocation?.Id ?? ''}:`;
@@ -266,7 +339,7 @@ export default function CanvasView() {
   useEffect(() => {
     if (!currentLocation || !wrapRef.current) return;
     const el = wrapRef.current;
-    const layout = buildLayout(currentLocation, expandedCaps);
+    const layout = buildLayout(currentLocation, expandedCaps, expandedCults);
     const pad = 40;
     const scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, Math.min(
       (el.clientWidth  - 2 * pad) / layout.bounds.w,
@@ -282,7 +355,7 @@ export default function CanvasView() {
       if (e.key === 'Escape') { selectItem(null); return; }
       if ((e.key === 'f' || e.key === 'F') && currentLocation && wrapRef.current) {
         const el = wrapRef.current;
-        const layout = buildLayout(currentLocation, expandedCaps);
+        const layout = buildLayout(currentLocation, expandedCaps, expandedCults);
         const pad = 40;
         const scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, Math.min(
           (el.clientWidth  - 2 * pad) / layout.bounds.w,
@@ -293,7 +366,7 @@ export default function CanvasView() {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [currentLocation, expandedCaps, selectItem, setView]);
+  }, [currentLocation, expandedCaps, expandedCults, selectItem, setView]);
 
   // Stage pan: sync back to view state after drag
   const handleStageDragEnd = () => {
@@ -306,14 +379,12 @@ export default function CanvasView() {
 
   const locId = currentLocation?.Id ?? '';
 
-  // Item drag: update posMap so pipe lines follow live
   const handleItemDrag = (item, e) => {
     const key = itemKey(item, locId);
     const x = e.target.x(), y = e.target.y();
     setPosMap(prev => ({ ...prev, [key]: { x, y } }));
   };
 
-  // Wheel zoom
   const handleWheel = (e) => {
     e.evt.preventDefault();
     const stage = stageRef.current;
@@ -332,8 +403,8 @@ export default function CanvasView() {
   };
 
   const layout = useMemo(
-    () => currentLocation ? buildLayout(currentLocation, expandedCaps) : null,
-    [currentLocation, expandedCaps],
+    () => currentLocation ? buildLayout(currentLocation, expandedCaps, expandedCults) : null,
+    [currentLocation, expandedCaps, expandedCults],
   );
   const items = layout?.items ?? [];
 
@@ -343,16 +414,36 @@ export default function CanvasView() {
 
   const onSelect = (item) => {
     if (item.kind === 'cap-toggle') toggleCapExpanded(item.ref.Id);
+    else if (item.kind === 'cult-toggle') toggleCultExpanded(item.ref.Id);
     else selectItem(item);
   };
 
-  // Effective position: posMap override (from drag) or base layout position
-  const getPos = (item) => posMap[itemKey(item, locId)] ?? { x: item.x, y: item.y };
+  // Effective position: posMap override for draggable items; parent-offset for children
+  const getPos = (item) => {
+    const draggable = ['location', 'greenhouse', 'asset', 'buffer', 'gasconn', 'elecconn'];
+    if (draggable.includes(item.kind)) {
+      return posMap[itemKey(item, locId)] ?? { x: item.x, y: item.y };
+    }
+    let parentItem = null;
+    if (item.kind === 'cap-toggle') {
+      parentItem = items.find(it => it.kind === 'asset' && it.ref === item.ref);
+    } else if (item.kind === 'capacity') {
+      parentItem = items.find(it => it.kind === 'asset' && it.ref === item.parents?.asset);
+    } else if (item.kind === 'cult-toggle') {
+      parentItem = items.find(it => it.kind === 'greenhouse' && it.ref === item.ref);
+    } else if (item.kind === 'cultivation') {
+      parentItem = items.find(it => it.kind === 'greenhouse' && it.ref === item.parents?.gh);
+    } else if (item.kind === 'allocationpoint' || item.kind === 'gasGridContract' || item.kind === 'elecGridContract') {
+      parentItem = items.find(it => (it.kind === 'gasconn' || it.kind === 'elecconn') && it.ref === item.parents?.conn);
+    }
+    if (!parentItem) return { x: item.x, y: item.y };
+    const pp = posMap[itemKey(parentItem, locId)] ?? { x: parentItem.x, y: parentItem.y };
+    return { x: item.x + pp.x - parentItem.x, y: item.y + pp.y - parentItem.y };
+  };
 
-  // Items with drag-adjusted positions, used by PipeLines
   const effectiveItems = items.map(item => {
-    const p = posMap[itemKey(item, locId)];
-    return p ? { ...item, x: p.x, y: p.y } : item;
+    const { x, y } = getPos(item);
+    return { ...item, x, y };
   });
 
   const dragHandlers = (item) => ({
@@ -393,6 +484,14 @@ export default function CanvasView() {
             <CapacityNode key={itemKey(it, locId)} item={it} pos={getPos(it)}
               selectedRefId={selectedRefId} onSelect={onSelect} />
           ))}
+          {items.filter(it => it.kind === 'cult-toggle').map(it => (
+            <CultToggleNode key={itemKey(it, locId)} item={it} pos={getPos(it)}
+              expandedCults={expandedCults} onSelect={onSelect} />
+          ))}
+          {items.filter(it => it.kind === 'cultivation').map(it => (
+            <CultivationNode key={itemKey(it, locId)} item={it} pos={getPos(it)}
+              selectedRefId={selectedRefId} onSelect={onSelect} />
+          ))}
           {items.filter(it => it.kind === 'buffer').map(it => (
             <BufferNode key={itemKey(it, locId)} item={it} pos={getPos(it)}
               selectedRefId={selectedRefId} onSelect={onSelect} {...dragHandlers(it)} />
@@ -404,6 +503,18 @@ export default function CanvasView() {
           {items.filter(it => it.kind === 'elecconn').map(it => (
             <ConnectionNode key={itemKey(it, locId)} item={it} pos={getPos(it)} kind="elec"
               selectedRefId={selectedRefId} onSelect={onSelect} {...dragHandlers(it)} />
+          ))}
+          {items.filter(it => it.kind === 'allocationpoint').map(it => (
+            <AllocationPointNode key={itemKey(it, locId)} item={it} pos={getPos(it)}
+              selectedRefId={selectedRefId} onSelect={onSelect} />
+          ))}
+          {items.filter(it => it.kind === 'gasGridContract').map(it => (
+            <GridContractNode key={itemKey(it, locId)} item={it} pos={getPos(it)}
+              selectedRefId={selectedRefId} onSelect={onSelect} />
+          ))}
+          {items.filter(it => it.kind === 'elecGridContract').map(it => (
+            <GridContractNode key={itemKey(it, locId)} item={it} pos={getPos(it)}
+              selectedRefId={selectedRefId} onSelect={onSelect} />
           ))}
         </Layer>
       </Stage>

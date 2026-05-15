@@ -11,6 +11,7 @@ export function AppProvider({ children }) {
   const [hitItems, setHitItems] = useState([]);
   const [view, setView] = useState({ x: 0, y: 0, scale: 1 });
   const [expandedCaps, setExpandedCaps] = useState(new Set());
+  const [expandedCults, setExpandedCults] = useState(new Set());
   const [visibleRelations, setVisibleRelations] = useState(new Map());
   const [toast, setToast] = useState(null);
   const [modal, setModal] = useState(null);
@@ -50,6 +51,14 @@ export function AppProvider({ children }) {
     });
   }, []);
 
+  const toggleCultExpanded = useCallback((ghId) => {
+    setExpandedCults(prev => {
+      const next = new Set(prev);
+      if (next.has(ghId)) next.delete(ghId); else next.add(ghId);
+      return next;
+    });
+  }, []);
+
   const toggleVisibleRelation = useCallback((id, payload) => {
     setVisibleRelations(prev => {
       const next = new Map(prev);
@@ -81,6 +90,7 @@ export function AppProvider({ children }) {
     hitItems, setHitItems, findHitItem,
     view, setView,
     expandedCaps, toggleCapExpanded,
+    expandedCults, toggleCultExpanded,
     visibleRelations, toggleVisibleRelation,
     toast, showToast,
     modal, setModal,
