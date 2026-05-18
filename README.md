@@ -1,8 +1,10 @@
-# Greenhouse CMS — Prototype
+# CMS Prototype
 
 A content management tool for modelling greenhouse locations and their energy infrastructure: gas/electricity connections, assets (WKK, boilers, batteries, CO₂ installations, heat pumps), capacity profiles, cultivation periods, and supply contracts.
 
-Data is served entirely by the **Assets API** microservice. 
+The defining characteristic of this CMS is that it is **visually oriented**: every object belonging to a location is rendered together on a single zoomable canvas, giving operators an immediate overview of the full configuration. A clickable tree panel mirrors the canvas hierarchy, so navigating between objects and opening their edit forms requires only a single click from anywhere in the interface.
+
+Data is served entirely by the **Assets API** microservice.
 
 ---
 
