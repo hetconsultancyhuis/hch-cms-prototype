@@ -509,6 +509,10 @@ export type AgendaUpdateDto = AgendaBase & {
     userId?: string;
 };
 
+export type AllocationPointAssetUpdateDto = AllocationPointAssetBase & {
+    userId?: string;
+};
+
 export type AllocationPointUpdateDto = AllocationPointBase & {
     userId?: string;
 };
@@ -1499,6 +1503,95 @@ export type AgendaCreateManyResponses = {
 };
 
 export type AgendaCreateManyResponse = AgendaCreateManyResponses[keyof AgendaCreateManyResponses];
+
+export type AllocationPointAssetDeleteData = {
+    body: AllocationPointAssetUpdateDto;
+    path?: never;
+    query?: never;
+    url: '/api/AllocationPointAsset';
+};
+
+export type AllocationPointAssetDeleteErrors = {
+    404: unknown;
+};
+
+export type AllocationPointAssetDeleteResponses = {
+    200: Blob | File;
+};
+
+export type AllocationPointAssetDeleteResponse = AllocationPointAssetDeleteResponses[keyof AllocationPointAssetDeleteResponses];
+
+export type AllocationPointAssetGetAllData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/AllocationPointAsset';
+};
+
+export type AllocationPointAssetGetAllErrors = {
+    404: unknown;
+};
+
+export type AllocationPointAssetGetAllResponses = {
+    200: Array<AllocationPointAssetDto>;
+};
+
+export type AllocationPointAssetGetAllResponse = AllocationPointAssetGetAllResponses[keyof AllocationPointAssetGetAllResponses];
+
+export type AllocationPointAssetCreateData = {
+    body: AllocationPointAssetUpdateDto;
+    path?: never;
+    query?: never;
+    url: '/api/AllocationPointAsset';
+};
+
+export type AllocationPointAssetCreateErrors = {
+    404: unknown;
+    422: unknown;
+};
+
+export type AllocationPointAssetCreateResponses = {
+    201: AllocationPointAssetDto;
+};
+
+export type AllocationPointAssetCreateResponse = AllocationPointAssetCreateResponses[keyof AllocationPointAssetCreateResponses];
+
+export type AllocationPointAssetUpdateData = {
+    body: AllocationPointAssetUpdateDto;
+    path?: never;
+    query?: never;
+    url: '/api/AllocationPointAsset';
+};
+
+export type AllocationPointAssetUpdateErrors = {
+    404: unknown;
+    422: unknown;
+};
+
+export type AllocationPointAssetUpdateResponses = {
+    200: AllocationPointAssetDto;
+};
+
+export type AllocationPointAssetUpdateResponse = AllocationPointAssetUpdateResponses[keyof AllocationPointAssetUpdateResponses];
+
+export type AllocationPointAssetGetByIdData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/AllocationPointAsset/{id}';
+};
+
+export type AllocationPointAssetGetByIdErrors = {
+    404: unknown;
+};
+
+export type AllocationPointAssetGetByIdResponses = {
+    200: AllocationPointAssetDto;
+};
+
+export type AllocationPointAssetGetByIdResponse = AllocationPointAssetGetByIdResponses[keyof AllocationPointAssetGetByIdResponses];
 
 export type AllocationPointDeleteData = {
     body: AllocationPointUpdateDto;

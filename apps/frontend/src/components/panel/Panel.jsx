@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { api } from '../../api';
-import { ASSET_KINDS, BUFFER_KINDS, t } from '../../constants';
+import { ASSET_KINDS, BUFFER_KINDS, assetKindCfg, t } from '../../constants';
 import { ENTITY_REGISTRY } from '../../entities/registry';
 import PanelSection from './PanelSection';
 
@@ -76,14 +76,16 @@ export default function Panel() {
   } = app;
 
   const [form, setForm] = useState({});
+  const [checkedGhs, setCheckedGhs] = useState(new Set());
 
   const payload = selected?.payload;
   const kind = payload?.kind;
 
   // Sync form state when selection changes
   useEffect(() => {
-    if (!payload?.ref) { setForm({}); return; }
+    if (!payload?.ref) { setForm({}); setCheckedGhs(new Set()); return; }
     setForm(JSON.parse(JSON.stringify(payload.ref)));
+    if (payload.kind === 'buffer') setCheckedGhs(new Set(payload.ref.GreenhouseIds || []));
   }, [selected]);
 
   function handleChange(path, value) {
@@ -303,9 +305,9 @@ export default function Panel() {
 
   function Foot({ id }) {
     return (
-      <div className="panel-foot">
+      <div className="panel-foot" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 6 }}>
         <span className="meta">Id {id || '—'}</span>
-        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center', justifyContent: 'flex-end' }}>
           <button className="btn danger" onClick={del}>Verwijderen</button>
           <button className="btn" onClick={() => setSelected(null)}>Annuleren</button>
           <button className="btn primary" onClick={save}>Opslaan</button>
@@ -454,7 +456,7 @@ export default function Panel() {
           </PanelSection>
           <PanelSection title={`Assets · ${(gh.Assets || []).length}`}>
             {(gh.Assets || []).map(a => {
-              const cfg = ASSET_KINDS[a.Kind] || ASSET_KINDS.WKK;
+              const cfg = assetKindCfg(a);
               return <RelatedRow key={a.Id} color={cfg.color} short={cfg.short} name={a.Name} sub={cfg.label}
                 onClick={() => navigateToAsset(a, gh)} />;
             })}
@@ -511,7 +513,7 @@ export default function Panel() {
 
   if (kind === 'asset') {
     const a = ref;
-    const cfg = ASSET_KINDS[a.Kind] || ASSET_KINDS.WKK;
+    const cfg = assetKindCfg(a);
     const assetLoc = parents.loc || loc;
     const ex = a.extra || {};
     return (
@@ -621,7 +623,6 @@ export default function Panel() {
     const cfg = BUFFER_KINDS[bf.Kind] || BUFFER_KINDS.Heat;
     const bufLoc = parents.loc || loc;
     const linkedAssets = (bufLoc?.Greenhouses || []).flatMap(gh => gh.Assets || []).filter(a => a.BufferId === bf.Id);
-    const [checkedGhs, setCheckedGhs] = useState(new Set(bf.GreenhouseIds || []));
 
     const localSave = async () => {
       try {
@@ -668,16 +669,16 @@ export default function Panel() {
           </PanelSection>
           <PanelSection title={`Aangesloten assets · ${linkedAssets.length}`}>
             {linkedAssets.length ? linkedAssets.map(a => {
-              const ac = ASSET_KINDS[a.Kind] || ASSET_KINDS.WKK;
+              const ac = assetKindCfg(a);
               const gh = (bufLoc?.Greenhouses || []).find(g => (g.Assets || []).some(x => x.Id === a.Id));
               return <RelatedRow key={a.Id} color={ac.color} short={ac.short} name={a.Name} sub={ac.label}
                 onClick={() => navigateToAsset(a, gh)} />;
             }) : <div style={{ fontSize: 12, color: 'var(--ink-3)' }}>Geen assets gekoppeld.</div>}
           </PanelSection>
         </div>
-        <div className="panel-foot">
+        <div className="panel-foot" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 6 }}>
           <span className="meta">Id {bf.Id || '—'}</span>
-          <div style={{ display: 'flex', gap: 6 }}>
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center', justifyContent: 'flex-end' }}>
             <button className="btn danger" onClick={del}>Verwijderen</button>
             <button className="btn" onClick={() => setSelected(null)}>Annuleren</button>
             <button className="btn primary" onClick={localSave}>Opslaan</button>
@@ -804,6 +805,24 @@ export default function Panel() {
     const ap = ref; const conn = parents.conn; const connKind = parents.connKind || 'gas'; const apLoc = parents.loc || loc;
     const unit = connKind === 'gas' ? 'm3/h' : 'kWe';
     const allAssets = (apLoc?.Greenhouses || []).flatMap(gh => gh.Assets || []);
+
+    const apas = ap.AllocationPointAssets || [];
+    const linkedAssetIdSet = new Set(apas.map(x => x.AssetId).filter(Boolean));
+
+    const toggleLink = async (assetId) => {
+      const isLinked = linkedAssetIdSet.has(assetId);
+      try {
+        if (isLinked) {
+          const apa = apas.find(x => x.AssetId === assetId);
+          if (apa?.Id) await api.deleteAllocationPointAsset(apa.Id);
+        } else {
+          await api.createAllocationPointAsset(ap.Id, assetId);
+        }
+        showToast(isLinked ? 'Ontkoppeld' : 'Gekoppeld');
+        await loadData(null, true);
+      } catch (e) { showToast(e.message, true); }
+    };
+
     return (
       <div className="panel">
         <Head kind="Allocatiepunt" title={ap.Name} desc={ap.Description} />
@@ -817,16 +836,27 @@ export default function Panel() {
             <Field label={t('Direction')} name="Direction" value={fieldVal('Direction')} onChange={handleChange} />
             <Field label={`Capaciteit (${unit})`} name="Capacity" value={fieldVal('Capacity')} onChange={handleChange} unit={unit} />
           </PanelSection>
-          <PanelSection title={`Gekoppelde assets · ${(ap.AssetIds || []).length}`}>
-            {(ap.AssetIds || []).map(aid => {
-              const a = allAssets.find(x => x.Id === aid);
-              if (!a) return <div key={aid} style={{ fontSize: 12, color: 'var(--ink-3)' }}>{aid}</div>;
-              const ac = ASSET_KINDS[a.Kind] || ASSET_KINDS.WKK;
-              const gh = (apLoc?.Greenhouses || []).find(g => (g.Assets || []).some(x => x.Id === aid));
-              return <RelatedRow key={aid} color={ac.color} short={ac.short} name={a.Name} sub={ac.label}
-                onClick={() => navigateToAsset(a, gh)} />;
+          <PanelSection title={`Gekoppelde assets · ${linkedAssetIdSet.size}`}>
+            {allAssets.length === 0 && (
+              <div style={{ fontSize: 12, color: 'var(--ink-3)' }}>Geen assets in deze locatie.</div>
+            )}
+            {allAssets.map(a => {
+              const ac = assetKindCfg(a);
+              const linked = linkedAssetIdSet.has(a.Id);
+              const gh = (apLoc?.Greenhouses || []).find(g => (g.Assets || []).some(x => x.Id === a.Id));
+              return (
+                <label key={a.Id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0', fontSize: 13, cursor: 'pointer' }}>
+                  <input type="checkbox" checked={linked} onChange={() => toggleLink(a.Id)} />
+                  <span style={{
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    width: 24, height: 18, borderRadius: 3, background: ac.color,
+                    color: '#fff', fontSize: 8, fontFamily: 'IBM Plex Mono, monospace', flexShrink: 0,
+                  }}>{ac.short}</span>
+                  <span style={{ flex: 1 }}>{a.Name}</span>
+                  <span style={{ color: 'var(--ink-3)', fontSize: 11 }}>{gh?.Name || ''}</span>
+                </label>
+              );
             })}
-            {!(ap.AssetIds || []).length && <div style={{ fontSize: 12, color: 'var(--ink-3)' }}>Geen assets gekoppeld.</div>}
           </PanelSection>
           <PanelSection title={`Leveringscontracten · ${(ap.Contracts || []).length}`}>
             {(ap.Contracts || []).map(sc => {

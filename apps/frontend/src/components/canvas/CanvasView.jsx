@@ -2,7 +2,7 @@ import { useRef, useEffect, useState, useMemo } from 'react';
 import { Stage, Layer, Rect, Text, Group, Line } from 'react-konva';
 import { useApp } from '../../context/AppContext';
 import { buildLayout } from './layout';
-import { ASSET_KINDS, BUFFER_KINDS } from '../../constants';
+import { ASSET_KINDS, BUFFER_KINDS, assetKindCfg } from '../../constants';
 
 const MIN_SCALE = 0.2;
 const MAX_SCALE = 3.0;
@@ -13,6 +13,81 @@ function itemKey(item, locationId = '') {
 
 function refId(item) {
   return item.ref?.Id ?? JSON.stringify(item.ref).slice(0, 32);
+}
+
+// ── Focus: compute which ref IDs stay at full opacity when something is selected ──
+function computeRelated(payload, items) {
+  if (!payload) return null;
+  const { kind, ref, parents } = payload;
+  if (kind === 'location') return null; // whole canvas is "in scope"
+
+  const rel = new Set();
+  const add = (id) => { if (id) rel.add(id); };
+
+  add(ref?.Id);
+  add(parents?.loc?.Id); // location container always stays
+
+  switch (kind) {
+    case 'greenhouse':
+      // all children of this greenhouse
+      items.forEach(it => { if (it.parents?.gh?.Id === ref.Id) add(it.ref?.Id); });
+      break;
+
+    case 'asset':
+      add(parents?.gh?.Id);
+      items.filter(it => it.kind === 'capacity' && it.parents?.asset?.Id === ref.Id)
+           .forEach(it => add(it.ref?.Id));
+      items.filter(it => it.kind === 'allocationpoint' && (it.ref?.AssetIds || []).includes(ref.Id))
+           .forEach(it => { add(it.ref?.Id); add(it.parents?.conn?.Id); });
+      break;
+
+    case 'capacity':
+      add(parents?.asset?.Id);
+      add(parents?.gh?.Id);
+      break;
+
+    case 'cultivation':
+      add(parents?.gh?.Id);
+      break;
+
+    case 'allocationpoint':
+      add(parents?.conn?.Id);
+      (ref?.AssetIds || []).forEach(assetId => {
+        add(assetId);
+        const a = items.find(it => it.kind === 'asset' && it.ref?.Id === assetId);
+        if (a) add(a.parents?.gh?.Id);
+      });
+      break;
+
+    case 'gasconn':
+    case 'elecconn':
+      items.filter(it => it.kind === 'allocationpoint' && it.parents?.conn?.Id === ref.Id)
+           .forEach(it => {
+             add(it.ref?.Id);
+             (it.ref?.AssetIds || []).forEach(assetId => {
+               add(assetId);
+               const a = items.find(ai => ai.kind === 'asset' && ai.ref?.Id === assetId);
+               if (a) add(a.parents?.gh?.Id);
+             });
+           });
+      items.filter(it => (it.kind === 'gasGridContract' || it.kind === 'elecGridContract')
+                      && it.parents?.conn?.Id === ref.Id)
+           .forEach(it => add(it.ref?.Id));
+      break;
+
+    case 'buffer':
+      (ref?.GreenhouseIds || []).forEach(id => add(id));
+      break;
+
+    case 'gasGridContract':
+    case 'elecGridContract':
+      add(parents?.conn?.Id);
+      break;
+
+    default: break;
+  }
+
+  return rel;
 }
 
 // ── Selection ring ─────────────────────────────────────────────────────────────
@@ -27,13 +102,13 @@ function SelectRing({ x, y, w, h, r = 8 }) {
 }
 
 // ── Location ───────────────────────────────────────────────────────────────────
-function LocationNode({ item, pos, selectedRefId, onSelect, onDragMove, onDragEnd }) {
+function LocationNode({ item, pos, selectedRefId, onSelect, onDragMove, onDragEnd, opacity = 1 }) {
   const { w, h, ref: loc } = item;
   const pad = 30;
   const sel = selectedRefId === refId(item);
   return (
     <Group x={pos.x} y={pos.y} draggable onDragMove={onDragMove} onDragEnd={onDragEnd}
-      onClick={e => { e.cancelBubble = true; onSelect(item); }}>
+      onClick={e => { e.cancelBubble = true; onSelect(item); }} opacity={opacity}>
       <Rect x={0} y={0} width={w} height={h} fill="#f3f5f8" stroke="#cbd5e1" strokeWidth={1} cornerRadius={14} />
       <Rect x={pad} y={pad} width={w - 2 * pad} height={h - 2 * pad} fill="#fff" stroke="#e2e8f0" strokeWidth={1} cornerRadius={10} />
       <Rect x={pad} y={pad - 16} width={180} height={28} fill="#0f172a" cornerRadius={6} />
@@ -58,12 +133,12 @@ function LocationNode({ item, pos, selectedRefId, onSelect, onDragMove, onDragEn
 }
 
 // ── Greenhouse ─────────────────────────────────────────────────────────────────
-function GreenhouseNode({ item, pos, selectedRefId, onSelect, onDragMove, onDragEnd }) {
+function GreenhouseNode({ item, pos, selectedRefId, onSelect, onDragMove, onDragEnd, opacity = 1 }) {
   const { w, h, ref: gh } = item;
   const sel = selectedRefId === refId(item);
   return (
     <Group x={pos.x} y={pos.y} draggable onDragMove={onDragMove} onDragEnd={onDragEnd}
-      onClick={e => { e.cancelBubble = true; onSelect(item); }}>
+      onClick={e => { e.cancelBubble = true; onSelect(item); }} opacity={opacity}>
       <Rect x={0} y={0} width={w} height={h} fill="#f1f5f9" stroke="#0e7490" strokeWidth={1} cornerRadius={8} />
       <Rect x={0} y={0} width={w} height={36} fill="#0e7490" cornerRadius={[8, 8, 0, 0]} />
       <Text x={14} y={0} width={w - 120} height={36}
@@ -79,13 +154,13 @@ function GreenhouseNode({ item, pos, selectedRefId, onSelect, onDragMove, onDrag
 }
 
 // ── Asset ──────────────────────────────────────────────────────────────────────
-function AssetNode({ item, pos, selectedRefId, onSelect, onDragMove, onDragEnd }) {
+function AssetNode({ item, pos, selectedRefId, onSelect, onDragMove, onDragEnd, opacity = 1 }) {
   const { w, h, ref: asset } = item;
-  const cfg = ASSET_KINDS[asset.Kind] || ASSET_KINDS.WKK;
+  const cfg = assetKindCfg(asset);
   const sel = selectedRefId === refId(item);
   return (
     <Group x={pos.x} y={pos.y} draggable onDragMove={onDragMove} onDragEnd={onDragEnd}
-      onClick={e => { e.cancelBubble = true; onSelect(item); }}>
+      onClick={e => { e.cancelBubble = true; onSelect(item); }} opacity={opacity}>
       <Rect x={0} y={0} width={w} height={h} fill="#fff" stroke="#e2e8f0" strokeWidth={1} cornerRadius={8} />
       <Rect x={0} y={0} width={w} height={6} fill={cfg.color} cornerRadius={[4, 4, 0, 0]} />
       <Rect x={6} y={10} width={34} height={14} fill={cfg.tint} cornerRadius={3} />
@@ -102,12 +177,12 @@ function AssetNode({ item, pos, selectedRefId, onSelect, onDragMove, onDragEnd }
 }
 
 // ── Capacity toggle ────────────────────────────────────────────────────────────
-function CapToggleNode({ item, pos, expandedCaps, onSelect }) {
+function CapToggleNode({ item, pos, expandedCaps, onSelect, opacity = 1 }) {
   const { w, h, ref: asset } = item;
   const count = (asset.Capacities || []).length;
   const expanded = expandedCaps.has(asset.Id);
   return (
-    <Group x={pos.x} y={pos.y} onClick={e => { e.cancelBubble = true; onSelect(item); }}>
+    <Group x={pos.x} y={pos.y} onClick={e => { e.cancelBubble = true; onSelect(item); }} opacity={opacity}>
       <Rect x={0} y={0} width={w} height={h} fill="#e2e8f0" />
       <Text x={0} y={0} width={w} height={h}
         text={`${expanded ? '▲' : '▼'}  ${count} profiel${count !== 1 ? 'en' : ''}`}
@@ -118,11 +193,11 @@ function CapToggleNode({ item, pos, expandedCaps, onSelect }) {
 }
 
 // ── Capacity ───────────────────────────────────────────────────────────────────
-function CapacityNode({ item, pos, selectedRefId, onSelect }) {
+function CapacityNode({ item, pos, selectedRefId, onSelect, opacity = 1 }) {
   const { w, h, ref: cp } = item;
   const sel = selectedRefId === refId(item);
   return (
-    <Group x={pos.x} y={pos.y} onClick={e => { e.cancelBubble = true; onSelect(item); }}>
+    <Group x={pos.x} y={pos.y} onClick={e => { e.cancelBubble = true; onSelect(item); }} opacity={opacity}>
       <Rect x={0} y={0} width={w} height={h} fill="#f8fafc" stroke="#cbd5e1" strokeWidth={1} cornerRadius={4} />
       <Text x={6} y={6} width={w - 12} text={cp.Name || ''}
         fill="#475569" fontSize={9} fontFamily="IBM Plex Mono, monospace" ellipsis />
@@ -132,12 +207,12 @@ function CapacityNode({ item, pos, selectedRefId, onSelect }) {
 }
 
 // ── Cultivation toggle ─────────────────────────────────────────────────────────
-function CultToggleNode({ item, pos, expandedCults, onSelect }) {
+function CultToggleNode({ item, pos, expandedCults, onSelect, opacity = 1 }) {
   const { w, h, ref: gh } = item;
   const count = (gh.Cultivations || []).length;
   const expanded = expandedCults.has(gh.Id);
   return (
-    <Group x={pos.x} y={pos.y} onClick={e => { e.cancelBubble = true; onSelect(item); }}>
+    <Group x={pos.x} y={pos.y} onClick={e => { e.cancelBubble = true; onSelect(item); }} opacity={opacity}>
       <Rect x={0} y={0} width={w} height={h} fill="#dcfce7" cornerRadius={3} />
       <Text x={0} y={0} width={w} height={h}
         text={`${expanded ? '▲' : '▼'}  ${count} teelt${count !== 1 ? 'en' : ''}`}
@@ -148,11 +223,11 @@ function CultToggleNode({ item, pos, expandedCults, onSelect }) {
 }
 
 // ── Cultivation chip ───────────────────────────────────────────────────────────
-function CultivationNode({ item, pos, selectedRefId, onSelect }) {
+function CultivationNode({ item, pos, selectedRefId, onSelect, opacity = 1 }) {
   const { w, h, ref: c } = item;
   const sel = selectedRefId === refId(item);
   return (
-    <Group x={pos.x} y={pos.y} onClick={e => { e.cancelBubble = true; onSelect(item); }}>
+    <Group x={pos.x} y={pos.y} onClick={e => { e.cancelBubble = true; onSelect(item); }} opacity={opacity}>
       <Rect x={0} y={0} width={w} height={h} fill="#f0fdf4" stroke="#86efac" strokeWidth={1} cornerRadius={4} />
       <Rect x={0} y={0} width={4} height={h} fill="#15803d" cornerRadius={[4, 0, 0, 4]} />
       <Text x={10} y={0} width={w * 0.45 - 10} height={h}
@@ -168,14 +243,14 @@ function CultivationNode({ item, pos, selectedRefId, onSelect }) {
 }
 
 // ── Buffer ─────────────────────────────────────────────────────────────────────
-function BufferNode({ item, pos, selectedRefId, onSelect, onDragMove, onDragEnd }) {
+function BufferNode({ item, pos, selectedRefId, onSelect, onDragMove, onDragEnd, opacity = 1 }) {
   const { w, h, ref: buf } = item;
   const cfg = BUFFER_KINDS[buf.Kind] || BUFFER_KINDS.Heat;
   const r = h / 2;
   const sel = selectedRefId === refId(item);
   return (
     <Group x={pos.x} y={pos.y} draggable onDragMove={onDragMove} onDragEnd={onDragEnd}
-      onClick={e => { e.cancelBubble = true; onSelect(item); }}>
+      onClick={e => { e.cancelBubble = true; onSelect(item); }} opacity={opacity}>
       <Rect x={0} y={0} width={w} height={h} fill={cfg.tint} stroke={cfg.color} strokeWidth={1} cornerRadius={r} />
       <Text x={r + 6} y={4} width={w - r - 10}
         text={buf.Kind === 'CO2' ? 'CO2-BUFFER' : 'WARMTEBUFFER'}
@@ -189,7 +264,7 @@ function BufferNode({ item, pos, selectedRefId, onSelect, onDragMove, onDragEnd 
 }
 
 // ── Connection ─────────────────────────────────────────────────────────────────
-function ConnectionNode({ item, pos, kind, selectedRefId, onSelect, onDragMove, onDragEnd }) {
+function ConnectionNode({ item, pos, kind, selectedRefId, onSelect, onDragMove, onDragEnd, opacity = 1 }) {
   const { w, h, ref: conn } = item;
   const color = kind === 'gas' ? '#b45309' : '#1d4ed8';
   const tint  = kind === 'gas' ? '#fef3c7' : '#dbeafe';
@@ -198,7 +273,7 @@ function ConnectionNode({ item, pos, kind, selectedRefId, onSelect, onDragMove, 
   const sel = selectedRefId === refId(item);
   return (
     <Group x={pos.x} y={pos.y} draggable onDragMove={onDragMove} onDragEnd={onDragEnd}
-      onClick={e => { e.cancelBubble = true; onSelect(item); }}>
+      onClick={e => { e.cancelBubble = true; onSelect(item); }} opacity={opacity}>
       <Rect x={0} y={0} width={w} height={h} fill="#fff" stroke="#e2e8f0" strokeWidth={1} cornerRadius={8} />
       <Rect x={0} y={0} width={8} height={h} fill={tint} cornerRadius={[4, 0, 0, 4]} />
       <Text x={14} y={8}  text={label} fill={color} fontSize={9} fontFamily="IBM Plex Mono, monospace" />
@@ -212,11 +287,11 @@ function ConnectionNode({ item, pos, kind, selectedRefId, onSelect, onDragMove, 
 }
 
 // ── Allocation point row ───────────────────────────────────────────────────────
-function AllocationPointNode({ item, pos, selectedRefId, onSelect }) {
+function AllocationPointNode({ item, pos, selectedRefId, onSelect, opacity = 1 }) {
   const { w, h, ref: ap } = item;
   const sel = selectedRefId === refId(item);
   return (
-    <Group x={pos.x} y={pos.y} onClick={e => { e.cancelBubble = true; onSelect(item); }}>
+    <Group x={pos.x} y={pos.y} onClick={e => { e.cancelBubble = true; onSelect(item); }} opacity={opacity}>
       <Rect x={0} y={0} width={w} height={h} fill="#f8fafc" stroke="#e2e8f0" strokeWidth={1} cornerRadius={3} />
       <Rect x={0} y={0} width={3} height={h} fill="#6d28d9" cornerRadius={[3, 0, 0, 3]} />
       <Text x={8} y={0} width={24} height={h} text="AP" fill="#6d28d9" fontSize={7}
@@ -231,14 +306,14 @@ function AllocationPointNode({ item, pos, selectedRefId, onSelect }) {
 }
 
 // ── Grid contract row ──────────────────────────────────────────────────────────
-function GridContractNode({ item, pos, selectedRefId, onSelect }) {
+function GridContractNode({ item, pos, selectedRefId, onSelect, opacity = 1 }) {
   const { w, h, ref: gc } = item;
   const isGas = item.kind === 'gasGridContract';
   const color = isGas ? '#92400e' : '#1e40af';
   const short = isGas ? 'GGC' : 'EGC';
   const sel = selectedRefId === refId(item);
   return (
-    <Group x={pos.x} y={pos.y} onClick={e => { e.cancelBubble = true; onSelect(item); }}>
+    <Group x={pos.x} y={pos.y} onClick={e => { e.cancelBubble = true; onSelect(item); }} opacity={opacity}>
       <Rect x={0} y={0} width={w} height={h} fill="#fffbeb" stroke="#fde68a" strokeWidth={1} cornerRadius={3} />
       <Text x={6} y={0} width={28} height={h} text={short} fill={color} fontSize={7}
         fontFamily="IBM Plex Mono, monospace" verticalAlign="middle" />
@@ -248,6 +323,35 @@ function GridContractNode({ item, pos, selectedRefId, onSelect }) {
       {sel && <SelectRing x={0} y={0} w={w} h={h} r={3} />}
     </Group>
   );
+}
+
+// ── AP → Asset connector lines ────────────────────────────────────────────────
+function ApAssetLines({ items }) {
+  const aps    = items.filter(it => it.kind === 'allocationpoint');
+  const assets = items.filter(it => it.kind === 'asset');
+  if (!aps.length || !assets.length) return null;
+
+  const lines = [];
+  aps.forEach((ap, i) => {
+    const assetIds = ap.ref.AssetIds || [];
+    const color    = ap.parents?.connKind === 'elec' ? '#1d4ed8' : '#b45309';
+    assetIds.forEach((assetId, j) => {
+      const assetItem = assets.find(a => a.ref.Id === assetId);
+      if (!assetItem) return;
+      const x1   = ap.x + ap.w / 2;
+      const y1   = ap.y;
+      const x2   = assetItem.x + assetItem.w / 2;
+      const y2   = assetItem.y + assetItem.h;
+      const midY = y1 - (y1 - y2) * 0.45;
+      lines.push(
+        <Line key={`apa-${i}-${j}`}
+          points={[x2, y2, x2, midY, x1, midY, x1, y1]}
+          stroke={color} strokeWidth={1.5} opacity={0.45}
+          dash={[5, 6]} tension={0.3} listening={false} />,
+      );
+    });
+  });
+  return <>{lines}</>;
 }
 
 // ── Pipe lines (asset → buffer → greenhouse) ───────────────────────────────────
@@ -412,6 +516,12 @@ export default function CanvasView() {
 
   const selectedRefId = selected?.refId ?? null;
 
+  const relatedIds = useMemo(
+    () => selected ? computeRelated(selected.payload, items) : null,
+    [selected, items],
+  );
+  const isDimmed = (item) => !!relatedIds && !relatedIds.has(item.ref?.Id);
+
   const onSelect = (item) => {
     if (item.kind === 'cap-toggle') toggleCapExpanded(item.ref.Id);
     else if (item.kind === 'cult-toggle') toggleCultExpanded(item.ref.Id);
@@ -465,56 +575,70 @@ export default function CanvasView() {
         <Layer>
           {items.filter(it => it.kind === 'location').map(it => (
             <LocationNode key={itemKey(it, locId)} item={it} pos={getPos(it)}
-              selectedRefId={selectedRefId} onSelect={onSelect} {...dragHandlers(it)} />
+              selectedRefId={selectedRefId} onSelect={onSelect} {...dragHandlers(it)}
+              opacity={isDimmed(it) ? 0.2 : 1} />
           ))}
           {items.filter(it => it.kind === 'greenhouse').map(it => (
             <GreenhouseNode key={itemKey(it, locId)} item={it} pos={getPos(it)}
-              selectedRefId={selectedRefId} onSelect={onSelect} {...dragHandlers(it)} />
+              selectedRefId={selectedRefId} onSelect={onSelect} {...dragHandlers(it)}
+              opacity={isDimmed(it) ? 0.2 : 1} />
           ))}
           <PipeLines items={effectiveItems} />
+          <ApAssetLines items={effectiveItems} />
           {items.filter(it => it.kind === 'asset').map(it => (
             <AssetNode key={itemKey(it, locId)} item={it} pos={getPos(it)}
-              selectedRefId={selectedRefId} onSelect={onSelect} {...dragHandlers(it)} />
+              selectedRefId={selectedRefId} onSelect={onSelect} {...dragHandlers(it)}
+              opacity={isDimmed(it) ? 0.2 : 1} />
           ))}
           {items.filter(it => it.kind === 'cap-toggle').map(it => (
             <CapToggleNode key={itemKey(it, locId)} item={it} pos={getPos(it)}
-              expandedCaps={expandedCaps} onSelect={onSelect} />
+              expandedCaps={expandedCaps} onSelect={onSelect}
+              opacity={isDimmed(it) ? 0.2 : 1} />
           ))}
           {items.filter(it => it.kind === 'capacity').map(it => (
             <CapacityNode key={itemKey(it, locId)} item={it} pos={getPos(it)}
-              selectedRefId={selectedRefId} onSelect={onSelect} />
+              selectedRefId={selectedRefId} onSelect={onSelect}
+              opacity={isDimmed(it) ? 0.2 : 1} />
           ))}
           {items.filter(it => it.kind === 'cult-toggle').map(it => (
             <CultToggleNode key={itemKey(it, locId)} item={it} pos={getPos(it)}
-              expandedCults={expandedCults} onSelect={onSelect} />
+              expandedCults={expandedCults} onSelect={onSelect}
+              opacity={isDimmed(it) ? 0.2 : 1} />
           ))}
           {items.filter(it => it.kind === 'cultivation').map(it => (
             <CultivationNode key={itemKey(it, locId)} item={it} pos={getPos(it)}
-              selectedRefId={selectedRefId} onSelect={onSelect} />
+              selectedRefId={selectedRefId} onSelect={onSelect}
+              opacity={isDimmed(it) ? 0.2 : 1} />
           ))}
           {items.filter(it => it.kind === 'buffer').map(it => (
             <BufferNode key={itemKey(it, locId)} item={it} pos={getPos(it)}
-              selectedRefId={selectedRefId} onSelect={onSelect} {...dragHandlers(it)} />
+              selectedRefId={selectedRefId} onSelect={onSelect} {...dragHandlers(it)}
+              opacity={isDimmed(it) ? 0.2 : 1} />
           ))}
           {items.filter(it => it.kind === 'gasconn').map(it => (
             <ConnectionNode key={itemKey(it, locId)} item={it} pos={getPos(it)} kind="gas"
-              selectedRefId={selectedRefId} onSelect={onSelect} {...dragHandlers(it)} />
+              selectedRefId={selectedRefId} onSelect={onSelect} {...dragHandlers(it)}
+              opacity={isDimmed(it) ? 0.2 : 1} />
           ))}
           {items.filter(it => it.kind === 'elecconn').map(it => (
             <ConnectionNode key={itemKey(it, locId)} item={it} pos={getPos(it)} kind="elec"
-              selectedRefId={selectedRefId} onSelect={onSelect} {...dragHandlers(it)} />
+              selectedRefId={selectedRefId} onSelect={onSelect} {...dragHandlers(it)}
+              opacity={isDimmed(it) ? 0.2 : 1} />
           ))}
           {items.filter(it => it.kind === 'allocationpoint').map(it => (
             <AllocationPointNode key={itemKey(it, locId)} item={it} pos={getPos(it)}
-              selectedRefId={selectedRefId} onSelect={onSelect} />
+              selectedRefId={selectedRefId} onSelect={onSelect}
+              opacity={isDimmed(it) ? 0.2 : 1} />
           ))}
           {items.filter(it => it.kind === 'gasGridContract').map(it => (
             <GridContractNode key={itemKey(it, locId)} item={it} pos={getPos(it)}
-              selectedRefId={selectedRefId} onSelect={onSelect} />
+              selectedRefId={selectedRefId} onSelect={onSelect}
+              opacity={isDimmed(it) ? 0.2 : 1} />
           ))}
           {items.filter(it => it.kind === 'elecGridContract').map(it => (
             <GridContractNode key={itemKey(it, locId)} item={it} pos={getPos(it)}
-              selectedRefId={selectedRefId} onSelect={onSelect} />
+              selectedRefId={selectedRefId} onSelect={onSelect}
+              opacity={isDimmed(it) ? 0.2 : 1} />
           ))}
         </Layer>
       </Stage>

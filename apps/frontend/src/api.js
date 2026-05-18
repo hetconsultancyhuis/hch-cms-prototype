@@ -3,6 +3,7 @@ import {
   relationGetAll, relationCreate, relationUpdate, relationDelete,
   locationGetAll, locationCreate, locationUpdate, locationDelete,
   supplyGetAll,
+  heatSupplyGetAll,
   greenhouseGetAll,
   assetGetAll,
   capacityProfileGetAll,
@@ -19,6 +20,8 @@ import {
   gasConnectionCreate, gasConnectionUpdate, gasConnectionDelete,
   electricityConnectionCreate, electricityConnectionUpdate, electricityConnectionDelete,
   allocationPointCreate, allocationPointUpdate, allocationPointDelete,
+  allocationPointAssetGetAll,
+  allocationPointAssetCreate, allocationPointAssetUpdate, allocationPointAssetDelete,
   supplyContractCreate, supplyContractUpdate, supplyContractDelete,
   gasGridContractCreate, gasGridContractUpdate, gasGridContractDelete,
   electricityGridContractCreate, electricityGridContractUpdate, electricityGridContractDelete,
@@ -65,14 +68,15 @@ async function unwrap(promise) {
 
 async function buildLocationTree() {
   const [
-    locs, greenhouses, supplies, assets, caps,
+    locs, greenhouses, supplies, heatSupplies, assets, caps,
     cults, bufs,
     gasConns, elecConns,
-    aps, ggcs, egcs,
+    aps, ggcs, egcs, apas,
   ] = await Promise.all([
     unwrap(locationGetAll()),
     unwrap(greenhouseGetAll()),
     unwrap(supplyGetAll()),
+    unwrap(heatSupplyGetAll()),
     unwrap(assetGetAll()),
     unwrap(capacityProfileGetAll()),
     unwrap(cultivationGetAll()),
@@ -82,6 +86,7 @@ async function buildLocationTree() {
     unwrap(allocationPointGetAll()),
     unwrap(gasGridContractGetAll()),
     unwrap(electricityGridContractGetAll()),
+    unwrap(allocationPointAssetGetAll()),
   ]);
 
   // Greenhouses by locationId (GET /api/Greenhouse returns flat list with locationId)
@@ -123,72 +128,86 @@ async function buildLocationTree() {
     cultsByGh[c.GreenhouseId].push(c);
   }
 
-  // Allocation points with AssetIds from join table
-  const apMap = {};
-  for (const ap of (aps || [])) {
-    const assetIds = (ap.AllocationPointAssets || []).map(x => x.AssetId).filter(Boolean);
-    apMap[ap.Id] = { ...ap, AssetIds: assetIds };
+  // Index AllocationPointAsset records by both AllocationPointId and AssetId
+  const apaByApId = {};
+  const apaByAssetId = {};
+  for (const apa of (apas || [])) {
+    if (apa.AllocationPointId) {
+      if (!apaByApId[apa.AllocationPointId]) apaByApId[apa.AllocationPointId] = [];
+      apaByApId[apa.AllocationPointId].push(apa);
+    }
+    if (apa.AssetId) {
+      if (!apaByAssetId[apa.AssetId]) apaByAssetId[apa.AssetId] = [];
+      apaByAssetId[apa.AssetId].push(apa);
+    }
   }
 
-  // Gas connections: nest AllocationPoints + GasGridContracts
+  // Allocation points enriched with AssetIds from the join table
+  const apMap = {};
+  for (const ap of (aps || [])) {
+    const apasForAp = apaByApId[ap.Id] || [];
+    const assetIds  = apasForAp.map(x => x.AssetId).filter(Boolean);
+    apMap[ap.Id] = { ...ap, AllocationPointAssets: apasForAp, AssetIds: assetIds };
+  }
+
+  // Gas connections: AllocationPoints come exclusively from apMap (enriched with AssetIds).
+  // Starting with empty arrays avoids the bug where un-enriched nested APs block the enriched ones.
   const gasConnMap = {};
   for (const gc of (gasConns || []))
-    gasConnMap[gc.Id] = { ...gc, AllocationPoints: gc.AllocationPoints || [], GridContracts: gc.GridContracts || [] };
-  for (const ap of Object.values(apMap)) {
-    if (ap.GasConnectionId && gasConnMap[ap.GasConnectionId] &&
-        !gasConnMap[ap.GasConnectionId].AllocationPoints.find(x => x.Id === ap.Id))
+    gasConnMap[gc.Id] = { ...gc, AllocationPoints: [], GridContracts: [] };
+  for (const ap of Object.values(apMap))
+    if (ap.GasConnectionId && gasConnMap[ap.GasConnectionId])
       gasConnMap[ap.GasConnectionId].AllocationPoints.push(ap);
-  }
   for (const ggc of (ggcs || []))
     if (ggc.GasConnectionId && gasConnMap[ggc.GasConnectionId])
       gasConnMap[ggc.GasConnectionId].GridContracts.push(ggc);
 
-  // Electricity connections: nest AllocationPoints + ElectricityGridContracts
+  // Electricity connections: same pattern.
   const elecConnMap = {};
   for (const ec of (elecConns || []))
-    elecConnMap[ec.Id] = { ...ec, AllocationPoints: ec.AllocationPoints || [], GridContracts: ec.GridContracts || [] };
-  for (const ap of Object.values(apMap)) {
-    if (ap.ElectricityConnectionId && elecConnMap[ap.ElectricityConnectionId] &&
-        !elecConnMap[ap.ElectricityConnectionId].AllocationPoints.find(x => x.Id === ap.Id))
+    elecConnMap[ec.Id] = { ...ec, AllocationPoints: [], GridContracts: [] };
+  for (const ap of Object.values(apMap))
+    if (ap.ElectricityConnectionId && elecConnMap[ap.ElectricityConnectionId])
       elecConnMap[ap.ElectricityConnectionId].AllocationPoints.push(ap);
-  }
   for (const egc of (egcs || []))
     if (egc.ElectricityConnectionId && elecConnMap[egc.ElectricityConnectionId])
       elecConnMap[egc.ElectricityConnectionId].GridContracts.push(egc);
 
-  // Greenhouse-to-location map for connection/buffer derivation
+  // Greenhouse-to-location map
   const ghToLocId = {};
   for (const gh of (greenhouses || []))
     if (gh.LocationId) ghToLocId[gh.Id] = gh.LocationId;
 
-  // Derive locationId for gas connections: conn → AP → asset → supply → greenhouse → location
+  // Derive connection → location via the domain chain:
+  //   Greenhouse → Supply (Supply.GreenhouseId + Supply.AssetId)
+  //              → AllocationPointAsset (AssetId → AllocationPointId)
+  //              → AllocationPoint (GasConnectionId / ElectricityConnectionId)
   const gasConnLocId = {};
-  for (const [connId, conn] of Object.entries(gasConnMap)) {
-    outer: for (const ap of conn.AllocationPoints) {
-      for (const assetId of (ap.AssetIds || [])) {
-        const locId = ghToLocId[assetToGhId[assetId]];
-        if (locId) { gasConnLocId[connId] = locId; break outer; }
-      }
-    }
-  }
-
-  // Derive locationId for elec connections: same path
   const elecConnLocId = {};
-  for (const [connId, conn] of Object.entries(elecConnMap)) {
-    outer: for (const ap of conn.AllocationPoints) {
-      for (const assetId of (ap.AssetIds || [])) {
-        const locId = ghToLocId[assetToGhId[assetId]];
-        if (locId) { elecConnLocId[connId] = locId; break outer; }
-      }
+  for (const s of (supplies || [])) {
+    if (!s.GreenhouseId || !s.AssetId) continue;
+    const locId = ghToLocId[s.GreenhouseId];
+    if (!locId) continue;
+    for (const apa of (apaByAssetId[s.AssetId] || [])) {
+      const ap = apMap[apa.AllocationPointId];
+      if (!ap) continue;
+      if (ap.GasConnectionId)          gasConnLocId[ap.GasConnectionId]  = locId;
+      if (ap.ElectricityConnectionId)  elecConnLocId[ap.ElectricityConnectionId] = locId;
     }
   }
 
-  // Derive locationId for heat buffers: buffer → HeatSupply.greenhouseId → location
+  // Heat buffers: flat HeatSupply list → buffer → greenhouse → location
+  const bufGhIds = {};
+  for (const hs of (heatSupplies || []))
+    if (hs.HeatBufferId && hs.GreenhouseId) {
+      if (!bufGhIds[hs.HeatBufferId]) bufGhIds[hs.HeatBufferId] = [];
+      bufGhIds[hs.HeatBufferId].push(hs.GreenhouseId);
+    }
   const bufLocId = {};
-  for (const buf of (bufs || []))
-    for (const hs of (buf.HeatSupplies || []))
-      if (!bufLocId[buf.Id] && hs.GreenhouseId && ghToLocId[hs.GreenhouseId])
-        bufLocId[buf.Id] = ghToLocId[hs.GreenhouseId];
+  for (const [bufId, ghIds] of Object.entries(bufGhIds))
+    for (const ghId of ghIds)
+      if (!bufLocId[bufId] && ghToLocId[ghId])
+        bufLocId[bufId] = ghToLocId[ghId];
 
   // Assemble full location tree
   return (locs || []).map(loc => {
@@ -202,7 +221,12 @@ async function buildLocationTree() {
 
     const locGasConns  = Object.values(gasConnMap).filter(gc => gasConnLocId[gc.Id] === loc.Id);
     const locElecConns = Object.values(elecConnMap).filter(ec => elecConnLocId[ec.Id] === loc.Id);
-    const locBufs      = (bufs || []).filter(bf => bufLocId[bf.Id] === loc.Id);
+    const locBufs = (bufs || [])
+      .filter(bf => bufLocId[bf.Id] === loc.Id)
+      .map(bf => ({
+        ...bf,
+        GreenhouseIds: (bufGhIds[bf.Id] || []).filter(id => ghToLocId[id] === loc.Id),
+      }));
 
     return {
       ...loc,
@@ -262,6 +286,10 @@ export const api = {
   createAllocationPointElec: (connId, d) => unwrap(allocationPointCreate({ body: { electricityConnectionId: connId, ...d } })),
   updateAllocationPoint: (id, d)         => unwrap(allocationPointUpdate({ body: { id, ...d } })),
   deleteAllocationPoint: (id)            => unwrap(allocationPointDelete({ body: { id } })),
+
+  createAllocationPointAsset: (apId, assetId) => unwrap(allocationPointAssetCreate({ body: { allocationPointId: apId, assetId } })),
+  updateAllocationPointAsset: (id, d)          => unwrap(allocationPointAssetUpdate({ body: { id, ...d } })),
+  deleteAllocationPointAsset: (id)             => unwrap(allocationPointAssetDelete({ body: { id } })),
 
   createSupplyContract:  (apId, d) => unwrap(supplyContractCreate({ body: { allocationPointId: apId, ...d } })),
   updateSupplyContract:  (id, d)   => unwrap(supplyContractUpdate({ body: { id, ...d } })),

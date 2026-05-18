@@ -25,7 +25,20 @@ body { font-family: "IBM Plex Sans", system-ui, sans-serif; color: var(--ink); b
 .switcher button:hover { background: #f8fafc; }
 .badge { font-family: "IBM Plex Mono", monospace; font-size: 11px; border: 1px solid var(--line); padding: 3px 7px; border-radius: 4px; color: var(--ink-2); background: #fafbfd; }
 
-.app-layout { display: grid; grid-template-columns: 1fr 360px; height: calc(100vh - 56px); }
+.app-layout { display: grid; grid-template-columns: 200px 1fr 360px; height: calc(100vh - 56px); }
+
+.tree-panel { border-right: 1px solid var(--line); background: var(--panel); display: flex; flex-direction: column; overflow: hidden; }
+.tree-head { padding: 10px 12px 8px; border-bottom: 1px solid var(--line); background: #fafbfd; flex-shrink: 0; }
+.tree-loc { font-size: 12px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tree-sub { font-size: 10px; color: var(--ink-3); font-family: "IBM Plex Mono", monospace; margin-top: 2px; }
+.tree-body { flex: 1; overflow-y: auto; padding: 4px 0; }
+.tree-row { display: flex; align-items: center; gap: 5px; padding: 2px 6px; cursor: pointer; border-radius: 4px; margin: 0 4px 1px; min-width: 0; }
+.tree-row:hover { background: #f1f5f9; }
+.tree-row.tree-sel { background: #eff6ff; }
+.tree-badge { font-family: "IBM Plex Mono", monospace; font-size: 8px; color: #fff; border-radius: 2px; padding: 1px 3px; flex-shrink: 0; letter-spacing: 0.02em; }
+.tree-name { font-size: 11px; font-family: "IBM Plex Mono", monospace; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tree-row.tree-sel .tree-name { color: var(--accent); font-weight: 500; }
+.tree-row:hover .tree-name { color: var(--ink); }
 .stage-wrap { position: relative; overflow: hidden; background: var(--bg); }
 
 .legend { position: absolute; left: 16px; bottom: 16px; background: rgba(255,255,255,0.95); backdrop-filter: saturate(120%) blur(4px); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 12px; box-shadow: var(--shadow); display: grid; gap: 6px; }
