@@ -80,6 +80,13 @@ export const ENTITY_REGISTRY = {
     apiUpdate: api.updateAllocationPoint,
     apiDelete: api.deleteAllocationPoint,
   },
+  allocationpointasset: {
+    label: 'Allocatiepunt-asset koppeling',
+    color: '#6d28d9',
+    short: 'APA',
+    apiUpdate: api.updateAllocationPointAsset,
+    apiDelete: api.deleteAllocationPointAsset,
+  },
   supplycontract: {
     label: 'Leveringscontract',
     color: '#0f172a',

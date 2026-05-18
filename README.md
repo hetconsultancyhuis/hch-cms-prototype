@@ -6,12 +6,16 @@ Data is served entirely by the **Assets API** microservice.
 
 ---
 
+## Demo
+
+https://github.com/user-attachments/assets/f6b4fa10-7556-49f4-950d-2efc59c85a6e
+
 ## Architecture
 
 ```
 Frontend (React + Vite)
   └── api.js  ──HTTP──▶  proxy (/api/*)
-                              └──▶  Assets API  :23337
+                              └──▶  Assets API
 ```
 
 The repository is an **npm workspace monorepo** with a single app and a docs folder.
@@ -33,8 +37,8 @@ hch-cms-prototype/
 │           ├── main.jsx
 │           ├── App.jsx           # Root layout, zoom/pan controls
 │           ├── App.css
-│           ├── api.js            # Configures generated client; legacy api export
-│           ├── constants.js      # Asset/buffer kinds, Dutch label translations
+│           ├── api.js            # buildLocationTree (14 parallel fetches → nested tree); legacy api export
+│           ├── constants.js      # Asset/buffer kinds, ASSET_TYPE_TO_KIND numeric map, assetKindCfg helper, NL labels
 │           ├── generated/
 │           │   └── api/          # AUTO-GENERATED — do not edit by hand
 │           │       ├── sdk.gen.ts    # One typed function per microservice operation
@@ -44,13 +48,12 @@ hch-cms-prototype/
 │           │   └── AppContext.jsx
 │           ├── entities/
 │           │   └── registry.js       # Entity registry — single file to touch when API adds a resource
-│           ├── hooks/
-│           │   └── useCanvasKit.js
 │           └── components/
 │               ├── Topbar.jsx
 │               ├── Legend.jsx
 │               ├── Modal.jsx
 │               ├── Toast.jsx
+│               ├── TreePanel.jsx     # Left sidebar: clickable location tree
 │               ├── canvas/
 │               │   ├── CanvasView.jsx
 │               │   └── layout.js
@@ -101,8 +104,9 @@ The Vite dev server proxies `/api/` to `https://localhost:23337` (self-signed ce
 
 **React 18 + Vite 5**, rendered onto a **Konva** (Canvas 2D) surface.
 
-- **Canvas view** — zoomable/pannable schematic of the selected location. All entities are drawn as styled shapes: greenhouses (with expandable cultivation chips), assets (with expandable capacity profiles), buffers, and connections (with inline allocation points and grid contracts). Click to select; scroll to zoom; drag to pan; **F** to fit.
-- **Side panel** — collapsible section forms for the selected entity. Save and delete use the entity registry — no hardcoded URLs.
+- **Tree panel** (left sidebar) — compact monospace tree of the selected location: location → greenhouses → assets/cultivations → buffers → gas/elec connections → allocation points/grid contracts. Each row is clickable; the selected item is highlighted in sync with the canvas.
+- **Canvas view** — zoomable/pannable schematic of the selected location. Entities rendered as styled Konva shapes: greenhouses (expandable cultivation chips), assets (expandable capacity profiles), buffers, and connections (inline allocation points and grid contracts). Pipe lines connect buffers to their linked greenhouses; dashed connector lines link allocation points to their assets. Selecting an item dims all unrelated objects to 20% opacity. Click to select; scroll to zoom; drag to pan; **F** to fit.
+- **Side panel** (right) — collapsible section forms for the selected entity. Save and delete use the entity registry — no hardcoded URLs.
 - **Top bar** — filter by relation, switch between locations.
 
 ### Technology choices
@@ -147,15 +151,19 @@ Relations
 └── Locations
     ├── Greenhouses
     │   ├── Cultivations
-    │   └── Assets  (WKK · Boiler · EBoiler · Solar · Battery · HeatPump ·
-    │       └── CapacityProfiles   HeatStorage · CO₂ · HeatNetwork · GasLoad · Lighting)
-    ├── HeatBuffers
+    │   ├── Assets  (WKK · Boiler · EBoiler · Solar · Battery · HeatPump ·
+    │   │   │        CO₂ · HeatNetwork · GasLoad · OperatingLoad · Lighting)
+    │   │   └── CapacityProfiles
+    │   └── (linked to HeatBuffers via HeatSupplies join table)
+    ├── HeatBuffers  ←──── HeatSupplies (heatBufferId + greenhouseId)
     ├── GasConnections
-    │   ├── AllocationPoints → SupplyContracts
+    │   ├── AllocationPoints ←── AllocationPointAssets (join: allocationPointId + assetId)
+    │   │   └── SupplyContracts
     │   └── GasGridContracts
     └── ElectricityConnections
-        ├── AllocationPoints → SupplyContracts
+        ├── AllocationPoints ←── AllocationPointAssets (join: allocationPointId + assetId)
+        │   └── SupplyContracts
         └── ElectricityGridContracts
 ```
 
-The microservice uses flat routes — parent IDs are passed in the request body, not the URL path. `GET /api/Location` returns the full nested tree including greenhouses in a single response.
+The microservice uses flat routes — parent IDs are passed in the request body, not the URL path. `buildLocationTree` in `api.js` fetches 14 flat collections in parallel and assembles the nested tree the frontend expects. Location→connection membership is derived via: Greenhouse → Supply → Asset → AllocationPointAsset → AllocationPoint → Connection.

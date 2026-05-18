@@ -80,7 +80,14 @@ export function buildLayout(loc, expandedCaps, expandedCults = new Set()) {
     : 0;
   const connSectionH = hasConns ? CONN_SEC_GAP + maxConnH : 0;
 
-  const LOC_W = maxGhW + 2 * LOC_PAD;
+  // Widen the layout if the connection section would overflow the greenhouse area.
+  const totalConns = gasConns.length + elecConns.length;
+  const minConnW = totalConns > 0
+    ? 2 * GH_IPAD + totalConns * CONN_W + Math.max(0, totalConns - 1) * CONN_GAP
+    : 0;
+  const effectiveGhW = Math.max(maxGhW, minConnW);
+
+  const LOC_W = effectiveGhW + 2 * LOC_PAD;
   const LOC_H = LOC_PAD * 2 + LOC_HDR + totalGhH + bufSectionH + connSectionH;
   const loc_x = -LOC_W / 2;
   const loc_y = -LOC_H / 2;
@@ -90,7 +97,7 @@ export function buildLayout(loc, expandedCaps, expandedCults = new Set()) {
   let curY = loc_y + LOC_PAD + LOC_HDR;
   ghs.forEach((gh, i) => {
     const { ghH, assetSectionH } = ghSizes[i];
-    const ghW = maxGhW;
+    const ghW = effectiveGhW;
     const bx = loc_x + LOC_PAD;
     const by = curY;
     const cults = gh.Cultivations || [];
@@ -145,7 +152,7 @@ export function buildLayout(loc, expandedCaps, expandedCults = new Set()) {
   if (hasBufs) {
     const bufY = loc_y + LOC_PAD + LOC_HDR + totalGhH + BUF_SEC_GAP;
     const bx = loc_x + LOC_PAD;
-    const bufAvailW = maxGhW - 2 * GH_IPAD;
+    const bufAvailW = effectiveGhW - 2 * GH_IPAD;
     const bufW = (bufAvailW - (locBufs.length - 1) * BUF_ITEM_GAP) / locBufs.length;
     locBufs.forEach((bf, k) => {
       items.push({
@@ -197,7 +204,7 @@ export function buildLayout(loc, expandedCaps, expandedCults = new Set()) {
 
     elecConns.forEach((ec, j) => {
       const ecH = connItemH(ec);
-      const cx = bx + maxGhW - GH_IPAD - (j + 1) * CONN_W - j * CONN_GAP;
+      const cx = bx + effectiveGhW - GH_IPAD - (j + 1) * CONN_W - j * CONN_GAP;
       items.push({ kind: 'elecconn', x: cx, y: connY, w: CONN_W, h: ecH, ref: ec, parents: { loc } });
 
       const aps = ec.AllocationPoints || [];

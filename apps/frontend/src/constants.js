@@ -13,6 +13,28 @@ export const ASSET_KINDS = {
   Lighting:     { label: 'Belichting',     color: '#d97706', tint: '#fffbeb', short: 'LT' },
 };
 
+// AssetTypeDto numeric values (0–10) → ASSET_KINDS key
+export const ASSET_TYPE_TO_KIND = {
+  0:  'WKK',
+  1:  'HeatNetwork',
+  2:  'CO2Asset',
+  3:  'Solar',
+  4:  'Boiler',
+  5:  'EBoiler',
+  6:  'HeatPump',
+  7:  'Battery',
+  8:  'GasLoad',
+  9:  'OperatingLoad',
+  10: 'Lighting',
+};
+
+// Resolves an asset object to its ASSET_KINDS config.
+// Uses AssetType (numeric, from API) first; falls back to Kind (legacy string field).
+export function assetKindCfg(asset) {
+  const key = ASSET_TYPE_TO_KIND[asset?.AssetType] ?? asset?.Kind;
+  return ASSET_KINDS[key] ?? ASSET_KINDS.WKK;
+}
+
 export const BUFFER_KINDS = {
   Heat: { label: 'Warmtebuffer', color: '#b91c1c', tint: '#fee2e2', short: 'HB', unit: 'm3', icon: 'T' },
   CO2:  { label: 'CO2-buffer',   color: '#15803d', tint: '#dcfce7', short: 'C2', unit: 'm3', icon: 'C' },

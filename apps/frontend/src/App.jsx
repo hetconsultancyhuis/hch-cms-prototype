@@ -3,6 +3,7 @@ import './App.css';
 import { useApp } from './context/AppContext';
 import Topbar from './components/Topbar';
 import Legend from './components/Legend';
+import TreePanel from './components/TreePanel';
 import CanvasView from './components/canvas/CanvasView';
 import Panel from './components/panel/Panel';
 import Modal from './components/Modal';
@@ -46,6 +47,7 @@ export default function App() {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <Topbar onFitView={fitView} />
       <div className="app-layout">
+        <TreePanel />
         <section className="stage-wrap">
           <CanvasView />
           <Legend
